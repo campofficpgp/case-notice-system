@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Notice System — Camp Office Prosecutor General Punjab</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --navy:#1F4E78; --navy-dark:#153A5B; --navy-tint:#EAF0F5;
+    --amber:#B8860B; --amber-tint:#FBF3DF;
+    --bg:#F4F3EF; --surface:#FFFFFF; --border:#DBD7CE; --border-strong:#BEC7CE;
+    --text:#22303C; --muted:#5B6B76; --danger:#B3261E; --danger-tint:#FBEAE9;
+    --success:#2F7D4F; --success-tint:#EAF4EE; --radius:6px;
+    --shadow:0 1px 2px rgba(21,58,91,0.08), 0 1px 1px rgba(21,58,91,0.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans",Arial,sans-serif;font-size:14px;line-height:1.45;}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:700;margin:0;color:var(--navy-dark);}
+
+  .fullscreen-overlay{position:fixed;inset:0;background:linear-gradient(160deg,var(--navy-dark),var(--navy));display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .auth-card{background:#fff;border-radius:8px;padding:30px 32px;width:100%;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.35);}
+  .auth-card h2{font-size:19px;margin-bottom:4px;}
+  .auth-card .auth-sub{color:var(--muted);font-size:12.5px;margin-bottom:18px;}
+  .auth-card .field{margin-bottom:12px;}
+  .auth-warn{background:var(--amber-tint);border:1px solid #E7D6A8;border-radius:var(--radius);padding:9px 11px;font-size:11.5px;color:#7A5C10;margin-top:16px;line-height:1.5;}
+  .auth-error{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;}
+  .role-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;background:var(--navy-tint);color:var(--navy-dark);}
+  .role-badge.admin{background:var(--amber-tint);color:#7A5C10;}
+
+  .topbar{background:linear-gradient(180deg,var(--navy) 0%, var(--navy-dark) 100%);color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid var(--amber);}
+  .topbar h1{color:#fff;font-size:18px;letter-spacing:.2px;}
+  .topbar .sub{color:#CFE0EC;font-size:12px;margin-top:2px;}
+  .userbar{display:flex;align-items:center;gap:10px;font-size:12.5px;color:#CFE0EC;flex-wrap:wrap;}
+  .userbar button, .userbar select{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 11px;border-radius:var(--radius);font-size:12px;cursor:pointer;font-family:inherit;}
+  .userbar button:hover{background:rgba(255,255,255,.25);}
+
+  main{max-width:1200px;margin:0 auto;padding:22px 26px 60px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:18px;}
+  .card h3{font-size:13px;font-family:inherit;text-transform:uppercase;letter-spacing:.05em;color:var(--navy);margin-bottom:12px;font-weight:700;}
+  .panel-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+  .panel-head h2{font-size:20px;}
+  .panel-head p{margin:4px 0 0;color:var(--muted);font-size:12.5px;max-width:640px;}
+  .count-chip{font-size:11.5px;background:var(--navy-tint);color:var(--navy-dark);border-radius:999px;padding:2px 10px;font-weight:600;}
+
+  .grid{display:grid;gap:12px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:1000px){.grid.cols-4{grid-template-columns:repeat(2,1fr);}.grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:640px){.grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr;}main{padding:14px 12px 50px;}.topbar{flex-direction:column;align-items:stretch;}.auth-card{padding:22px 18px;}}
+
+  label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  input,select,textarea{width:100%;padding:8px 9px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13.5px;font-family:inherit;background:#fff;color:var(--text);}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px var(--navy-tint);}
+  .field{display:flex;flex-direction:column;}
+  .field-hint{font-size:11px;color:var(--muted);margin-top:3px;}
+
+  .btnbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+  button.btn{border:1px solid var(--navy);background:var(--navy);color:#fff;padding:9px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+  button.btn:hover{background:var(--navy-dark);}
+  button.btn.secondary{background:#fff;color:var(--navy);}
+  button.btn.secondary:hover{background:var(--navy-tint);}
+  button.btn.ghost{background:transparent;border-color:var(--border-strong);color:var(--muted);}
+  button.btn.ghost:hover{background:#f1f0ec;}
+  button.btn.danger{background:#fff;color:var(--danger);border-color:var(--danger);}
+  button.btn.small{padding:5px 10px;font-size:12px;}
+
+  .search-bar{background:var(--amber-tint);border:1px solid #E7D6A8;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;}
+  .search-bar h3{color:var(--amber);}
+
+  table{width:100%;border-collapse:collapse;font-size:12.6px;}
+  thead th{background:var(--navy);color:#fff;text-align:left;padding:9px 8px;white-space:nowrap;}
+  tbody td{padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody tr:nth-child(even){background:#FAFAF8;}
+  tbody tr:hover{background:var(--navy-tint);}
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+  .empty-row td{text-align:center;color:var(--muted);padding:22px 8px;font-style:italic;}
+  .row-actions{display:flex;gap:6px;}
+
+  input.cell-input{border:1px dashed transparent;background:transparent;font:inherit;color:inherit;width:100%;padding:2px 4px;border-radius:3px;}
+
+  .guest-banner{display:none;background:var(--amber-tint);border:1px solid #E7D6A8;color:#7A5C10;padding:8px 14px;border-radius:var(--radius);font-size:12.5px;margin-bottom:14px;}
+  body.guest-mode .guest-banner{display:block;}
+  body.guest-mode .entry-form{display:none !important;}
+  body.guest-mode .row-actions button:not(.view-only-btn){display:none !important;}
+
+  /* Notice overlay */
+  .notice-shell{background:#fff;width:100%;max-width:820px;max-height:92vh;overflow:auto;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4);}
+  .notice-toolbar{display:flex;gap:14px;align-items:end;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:#F7F6F3;position:sticky;top:0;}
+  .notice-toolbar .field{min-width:140px;}
+  .notice-paper{padding:40px 46px;}
+  .notice-paper.rtl{direction:rtl;text-align:right;font-family:"Jameel Noori Nastaleeq","Noto Nastaliq Urdu","Noto Naskh Arabic",Tahoma,Arial,sans-serif;font-size:16px;}
+  .notice-header{text-align:center;border-bottom:3px double var(--navy);padding-bottom:14px;margin-bottom:22px;}
+  .notice-header h2{font-size:19px;line-height:1.4;}
+  .notice-header .sub{font-size:12.5px;color:var(--muted);margin-top:4px;}
+  .notice-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 26px;margin-bottom:20px;font-size:13px;border:1px solid var(--border);border-radius:6px;padding:14px 16px;background:#FAFAF8;}
+  .notice-paper.rtl .notice-meta{direction:rtl;}
+  .notice-meta .label{color:var(--muted);font-weight:600;}
+  .notice-body{font-size:14.5px;line-height:2;margin-bottom:30px;text-align:justify;}
+  .notice-sign-block{display:flex;justify-content:space-between;align-items:flex-end;margin-top:50px;}
+  .notice-sender{font-size:13px;line-height:1.7;}
+  .stamp{
+    width:130px;height:130px;border:3px solid #7a1010;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    color:#7a1010;font-weight:700;font-size:12px;line-height:1.3;transform:rotate(-8deg);
+    position:relative;opacity:.85;
+  }
+  .stamp::before{content:"";position:absolute;inset:6px;border:1px dashed #7a1010;border-radius:50%;}
+  @media print{
+    nav,.search-bar,.btnbar,.userbar,.row-actions,.card.entry-form,.auth-screen,footer{display:none !important;}
+    body{background:#fff;}
+    body:not(.notice-mode) .notice-overlay{display:none !important;}
+    body.notice-mode > #appMain, body.notice-mode > .toast{display:none !important;}
+    body.notice-mode .notice-toolbar{display:none !important;}
+    body.notice-mode .notice-overlay{position:static !important;background:none !important;padding:0 !important;}
+    body.notice-mode .notice-shell{box-shadow:none !important;max-height:none !important;max-width:none !important;width:100% !important;border-radius:0;}
+  }
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--navy-dark);color:#fff;padding:11px 18px;border-radius:var(--radius);box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  footer.appfoot{text-align:center;color:var(--muted);font-size:11.5px;padding:18px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<div class="fullscreen-overlay auth-screen" id="authSetupScreen" style="display:none;">
+  <div class="auth-card">
+    <h2>Create an account</h2>
+    <div class="auth-sub">New accounts start as "Guest" (view-only). An existing Administrator must upgrade your role afterwards.</div>
+    <div class="field"><label>Your email</label><input type="email" id="setup_username" placeholder="e.g. name@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="setup_password"></div>
+    <div class="field"><label>Confirm password</label><input type="password" id="setup_password2"></div>
+    <button class="btn" id="setupBtn" style="width:100%;">Create account</button>
+    <div class="auth-error" id="setupError"></div>
+    <button class="btn ghost" id="backToLoginBtn" style="width:100%;margin-top:10px;">Back to sign in</button>
+    <div class="auth-warn">Data is stored online in this system's shared Firebase database. Only Administrators can add, edit, or delete case entries; Guests can view and print everything.</div>
+  </div>
+</div>
+<div class="fullscreen-overlay auth-screen" id="authLoginScreen" style="display:none;">
+  <div class="auth-card">
+    <h2>Sign in</h2>
+    <div class="auth-sub">Case Notice System — Camp Office Prosecutor General Punjab</div>
+    <div class="field"><label>Email</label><input type="email" id="login_username"></div>
+    <div class="field"><label>Password</label><input type="password" id="login_password"></div>
+    <button class="btn" id="loginBtn" style="width:100%;">Sign in</button>
+    <div class="auth-error" id="loginError"></div>
+    <button class="btn ghost" id="goToSignupBtn" style="width:100%;margin-top:10px;">Create a new account</button>
+  </div>
+</div>
+
+<!-- ================= NOTICE OVERLAY ================= -->
+<div class="fullscreen-overlay notice-overlay" id="noticeOverlay" style="display:none;">
+  <div class="notice-shell">
+    <div class="notice-toolbar">
+      <div class="field"><label>Paper size</label>
+        <select id="n_paperSize"><option value="A4">A4</option><option value="Legal">Legal (8.5×14in)</option><option value="Foolscap">Foolscap (8.5×13in)</option></select>
+      </div>
+      <div class="field"><label>Language</label>
+        <select id="n_lang"><option value="en">English</option><option value="ur">اردو</option></select>
+      </div>
+      <button class="btn" id="n_printBtn">Print</button>
+      <button class="btn ghost" id="n_closeBtn">Close</button>
+    </div>
+    <div class="notice-paper" id="noticePaper"></div>
+  </div>
+</div>
+
+<div id="appMain" style="display:none;">
+<div class="topbar">
+  <div>
+    <h1>Case Notice System</h1>
+    <div class="sub">Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad</div>
+  </div>
+  <div class="userbar">
+    <label>Paper size
+      <select id="globalPaperSize"><option value="A4">A4</option><option value="Legal">Legal</option><option value="Foolscap">Foolscap</option></select>
+    </label>
+    <button id="globalPrintBtn">Print current view</button>
+    <span>Signed in as <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole"></span></span>
+    <button id="logoutBtn">Log out</button>
+  </div>
+</div>
+
+<main>
+  <div class="guest-banner">You're signed in as a <b>Guest</b> — you can view and print everything, but adding, editing, or deleting is limited to Administrators.</div>
+
+  <div class="panel-head">
+    <div>
+      <h2>Case Notice Register</h2>
+      <p>Register case details for the Cause List and generate a printable notice directing the I.O. / S.H.O. to appear with the case record.</p>
+    </div>
+    <span class="count-chip" id="caseCount">0 cases</span>
+  </div>
+
+  <div class="card entry-form" id="caseFormCard">
+    <h3 id="caseFormTitle">Add a case</h3>
+    <div class="grid cols-4">
+      <div class="field"><label>Case No / Crl.PLA No</label><input type="text" id="c_caseNo" placeholder="e.g. Crl.PLA-123/2026"></div>
+      <div class="field" style="grid-column:span 2;"><label>Title of Case</label><input type="text" id="c_title" placeholder="e.g. Muhammad Ali"></div>
+      <div class="field"><label>Vs No</label><input type="text" id="c_vs" placeholder="e.g. The State"></div>
+    </div>
+    <div class="grid cols-4" style="margin-top:12px;">
+      <div class="field"><label>Case Type</label>
+        <select id="c_caseType"><option value="BBA">BBA — Bail Before Arrest</option><option value="BAA">BAA — Bail After Arrest</option><option value="COB">COB — Cancellation of Bail</option></select>
+      </div>
+      <div class="field"><label>F.I.R. No</label><input type="text" id="c_firNo" placeholder="e.g. 245/2026"></div>
+      <div class="field"><label>F.I.R. Date</label><input type="date" id="c_firDate"></div>
+      <div class="field"><label>F.I.R. Year (if date unknown)</label><select id="c_firYear"></select></div>
+    </div>
+    <div class="grid cols-4" style="margin-top:12px;">
+      <div class="field"><label>Police Station</label>
+        <select id="c_ps"></select>
+        <input type="text" id="c_ps_new" placeholder="Type the new police station" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field"><label>District</label><select id="c_district"></select></div>
+      <div class="field"><label>Tehsil</label>
+        <select id="c_tehsil"></select>
+        <input type="text" id="c_tehsil_new" placeholder="Type the new tehsil" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field"><label>Bench No</label><select id="c_bench"></select></div>
+    </div>
+    <div class="grid cols-4" style="margin-top:12px;">
+      <div class="field"><label>Cause List Serial No</label><select id="c_serial"></select></div>
+      <div class="field"><label>Case Fixed Date</label><input type="date" id="c_fixedDate"></div>
+      <div class="field" style="grid-column:span 2;"><label>Remarks (optional)</label><input type="text" id="c_remarks"></div>
+    </div>
+    <div class="btnbar">
+      <button class="btn" id="c_saveBtn">Save case</button>
+      <button class="btn ghost" id="c_cancelBtn" style="display:none;">Cancel edit</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Notice Sender Details (used on every printed notice)</h3>
+    <div class="grid cols-4">
+      <div class="field"><label>Name</label><input type="text" id="s_name"></div>
+      <div class="field"><label>Designation</label><input type="text" id="s_designation"></div>
+      <div class="field"><label>Mobile No (editable)</label><input type="text" id="s_mobile"></div>
+      <div class="field"><label>Office Phone</label><input type="text" id="s_phone"></div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <h3>Search &amp; filter cases</h3>
+    <div class="grid cols-4">
+      <div class="field"><label>Case No</label><select id="f_caseNo"><option value="">All case numbers</option></select></div>
+      <div class="field"><label>Case Type</label><select id="f_caseType"><option value="">Any</option><option value="BBA">BBA</option><option value="BAA">BAA</option><option value="COB">COB</option></select></div>
+      <div class="field"><label>District</label><select id="f_district"><option value="">All districts</option></select></div>
+      <div class="field"><label>Bench No</label><select id="f_bench"><option value="">All benches</option></select></div>
+    </div>
+    <div class="grid cols-3" style="margin-top:10px;">
+      <div class="field"><label>Cause List Serial No</label><select id="f_serial"><option value="">All serials</option></select></div>
+      <div class="field"><label>Fixed date from</label><input type="date" id="f_from"></div>
+      <div class="field"><label>Fixed date to</label><input type="date" id="f_to"></div>
+    </div>
+    <div class="btnbar"><button class="btn ghost small" id="f_clear">Clear filters</button></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Case No</th><th>Title</th><th>Vs</th><th>Type</th><th>FIR No</th><th>FIR Date/Year</th>
+        <th>Police Station</th><th>District</th><th>Tehsil</th><th>Bench</th><th>Serial#</th><th>Fixed Date</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="caseTableBody"></tbody>
+    </table>
+  </div>
+</main>
+<footer class="appfoot">Case Notice System — data is stored online and shared across all signed-in users.</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- reference data ---------------- */
+var DISTRICTS = ["Attock","Bahawalnagar","Bahawalpur","Bhakkar","Chakwal","Chiniot","Dera Ghazi Khan","Faisalabad","Gujranwala","Gujrat","Hafizabad","Jhang","Jhelum","Kasur","Khanewal","Khushab","Lahore","Layyah","Lodhran","Mandi Bahauddin","Mianwali","Multan","Muzaffargarh","Nankana Sahib","Narowal","Okara","Pakpattan","Rahim Yar Khan","Rajanpur","Rawalpindi","Sahiwal","Sargodha","Sheikhupura","Sialkot","Toba Tek Singh","Vehari","Talagang","Murree","Taunsa","Kot Addu","Wazirabad"];
+var ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+var EN_ORD = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth","Tenth","Eleventh","Twelfth"];
+var UR_ORD = ["پہلا","دوسرا","تیسرا","چوتھا","پانچواں","چھٹا","ساتواں","آٹھواں","نواں","دسواں","گیارہواں","بارہواں"];
+
+var firebaseConfig = {
+  apiKey: "AIzaSyAlaykxDovMrmEstR1hl1QqASjQ20pxu68",
+  authDomain: "case-notice-mesege-system.firebaseapp.com",
+  projectId: "case-notice-mesege-system",
+  storageBucket: "case-notice-mesege-system.firebasestorage.app",
+  messagingSenderId: "670759594390",
+  appId: "1:670759594390:web:7624e9c724561e542195b7"
+};
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db = firebase.firestore();
+var SHARED_DOC_REF = db.collection("appData").doc("shared");
+var SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._h); toast._h=setTimeout(function(){t.classList.remove("show");},2200); }
+function uniqueSorted(arr){ return Array.from(new Set(arr.filter(function(v){return v!==undefined&&v!==null&&v!=="";}))).sort(function(a,b){return String(a).localeCompare(String(b),undefined,{numeric:true});}); }
+
+function normalizeData(data){
+  data.cases = data.cases || [];
+  data.policeStationMaster = data.policeStationMaster || [];
+  data.tehsilMaster = data.tehsilMaster || [];
+  data.senderName = data.senderName || "Rashid Mehmood";
+  data.senderDesignation = data.senderDesignation || "Focal Person";
+  data.senderMobile = data.senderMobile || "0300-0000000";
+  data.senderPhone = data.senderPhone || "051-9202466";
+  return data;
+}
+var STATE = normalizeData({});
+
+var saveTimer = null;
+function saveData(){
+  SUPPRESS_NEXT_SNAPSHOT_RENDER = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    SHARED_DOC_REF.set(STATE).catch(function(err){ toast("Could not save to the online database: "+err.message); });
+  }, 300);
+}
+function fetchStateFromFirestore(callback){
+  SHARED_DOC_REF.get().then(function(snap){
+    STATE = normalizeData(snap.exists? snap.data() : {});
+    callback();
+  }).catch(function(err){ toast("Could not load data from the online database: "+err.message); });
+}
+var unsubscribeSharedDoc = null;
+function startRealtimeSync(){
+  if(unsubscribeSharedDoc) unsubscribeSharedDoc();
+  unsubscribeSharedDoc = SHARED_DOC_REF.onSnapshot(function(snap){
+    if(SUPPRESS_NEXT_SNAPSHOT_RENDER){ SUPPRESS_NEXT_SNAPSHOT_RENDER=false; return; }
+    if(!snap.exists) return;
+    STATE = normalizeData(snap.data());
+    if(document.getElementById("appMain").style.display !== "none") renderAll();
+  });
+}
+
+/* ---------------- select-or-add helper (reused pattern) ---------------- */
+function populateSelectOrAdd(selectId, values, placeholderLabel){
+  var sel = document.getElementById(selectId);
+  if(!sel) return;
+  var keep = sel.value;
+  var unique = uniqueSorted(values);
+  sel.innerHTML = "<option value=''>"+esc(placeholderLabel)+"</option>"+
+    unique.map(function(v){ return "<option value='"+esc(v)+"'>"+esc(v)+"</option>"; }).join("")+
+    "<option value='__new__'>+ Add a new value…</option>";
+  if(keep && (unique.includes(keep) || keep==="__new__")) sel.value = keep;
+}
+function wireSelectOrAdd(selectId, newInputId){
+  var sel = document.getElementById(selectId);
+  var newInput = document.getElementById(newInputId);
+  sel.addEventListener("change", function(){
+    if(sel.value === "__new__"){ newInput.style.display="block"; newInput.focus(); }
+    else{ newInput.style.display="none"; newInput.value=""; }
+  });
+}
+function getSelectOrAddValue(selectId, newInputId){
+  var sel = document.getElementById(selectId);
+  if(sel.value === "__new__") return document.getElementById(newInputId).value.trim();
+  return sel.value;
+}
+function resetSelectOrAdd(selectId, newInputId){
+  document.getElementById(selectId).value = "";
+  var ni = document.getElementById(newInputId); ni.value=""; ni.style.display="none";
+}
+function setSelectOrAddValue(selectId, newInputId, value){
+  var sel = document.getElementById(selectId);
+  var hasOption = Array.from(sel.options).some(function(o){ return o.value===value; });
+  var ni = document.getElementById(newInputId);
+  if(value && hasOption){ sel.value=value; ni.style.display="none"; ni.value=""; }
+  else if(value){ sel.value="__new__"; ni.style.display="block"; ni.value=value; }
+  else { sel.value=""; ni.style.display="none"; ni.value=""; }
+}
+function populateDistinctSelect(sel, values){
+  if(!sel) return;
+  var keep = sel.value;
+  var placeholder = sel.options.length? sel.options[0].outerHTML : "";
+  var unique = uniqueSorted(values);
+  sel.innerHTML = placeholder + unique.map(function(v){ return "<option value='"+esc(v)+"'>"+esc(v)+"</option>"; }).join("");
+  if(keep && unique.includes(keep)) sel.value = keep;
+}
+
+/* ---------------- one-time static dropdowns ---------------- */
+(function initStaticSelects(){
+  var distOpts = "<option value=''>Select district…</option>"+DISTRICTS.map(function(d){ return "<option value='"+esc(d)+"'>"+esc(d)+"</option>"; }).join("");
+  document.getElementById("c_district").innerHTML = distOpts;
+  document.getElementById("f_district").innerHTML = "<option value=''>All districts</option>"+DISTRICTS.map(function(d){ return "<option value='"+esc(d)+"'>"+esc(d)+"</option>"; }).join("");
+
+  var benchOpts = ROMAN.map(function(r,i){ return "<option value='"+(i+1)+"'>Bench "+r+" ("+EN_ORD[i]+")</option>"; }).join("");
+  document.getElementById("c_bench").innerHTML = "<option value=''>Select bench…</option>"+benchOpts;
+  document.getElementById("f_bench").innerHTML = "<option value=''>All benches</option>"+benchOpts;
+
+  var serialOpts = "";
+  for(var i=1;i<=35;i++){ serialOpts += "<option value='"+i+"'>"+i+"</option>"; }
+  document.getElementById("c_serial").innerHTML = "<option value=''>Select serial…</option>"+serialOpts;
+  document.getElementById("f_serial").innerHTML = "<option value=''>All serials</option>"+serialOpts;
+
+  var yearOpts = "<option value=''>—</option>";
+  var curY = new Date().getFullYear();
+  for(var y=curY; y>=1990; y--){ yearOpts += "<option value='"+y+"'>"+y+"</option>"; }
+  document.getElementById("c_firYear").innerHTML = yearOpts;
+})();
+
+/* ---------------- paper size & print ---------------- */
+var PAGE_SIZE_CSS = { A4:"@page { size: A4; margin: 14mm; }", Legal:"@page { size: 8.5in 14in; margin: 14mm; }", Foolscap:"@page { size: 8.5in 13in; margin: 14mm; }" };
+function ensurePageSizeStyleEl(){
+  var el = document.getElementById("pageSizeStyle");
+  if(!el){ el=document.createElement("style"); el.id="pageSizeStyle"; document.head.appendChild(el); }
+  return el;
+}
+function setPageSize(sizeKey){ ensurePageSizeStyleEl().textContent = PAGE_SIZE_CSS[sizeKey] || PAGE_SIZE_CSS.A4; }
+function printCurrentView(){
+  var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
+  if(noticeOpen) document.body.classList.add("notice-mode");
+  window.print();
+}
+window.addEventListener("afterprint", function(){ document.body.classList.remove("notice-mode"); });
+document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
+document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
+setPageSize("A4");
+
+/* ================= AUTH ================= */
+var CURRENT_USER = null;
+function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
+function showSetupScreen(){ document.getElementById("authSetupScreen").style.display="flex"; document.getElementById("authLoginScreen").style.display="none"; document.getElementById("appMain").style.display="none"; }
+function showLoginScreen(){
+  document.getElementById("authLoginScreen").style.display="flex"; document.getElementById("authSetupScreen").style.display="none"; document.getElementById("appMain").style.display="none";
+  document.getElementById("login_username").value=""; document.getElementById("login_password").value=""; document.getElementById("loginError").textContent="";
+}
+function updateUserBar(){
+  document.getElementById("currentUserLabel").textContent = CURRENT_USER? CURRENT_USER.username : "—";
+  var roleEl = document.getElementById("currentUserRole");
+  roleEl.textContent = CURRENT_USER? (isAdmin()? "Administrator":"Guest") : "";
+  roleEl.className = "role-badge"+(isAdmin()? " admin":"");
+  document.body.classList.toggle("guest-mode", !isAdmin());
+}
+function showAppScreen(){
+  document.getElementById("authSetupScreen").style.display="none"; document.getElementById("authLoginScreen").style.display="none"; document.getElementById("appMain").style.display="block";
+  updateUserBar(); renderAll();
+}
+document.getElementById("goToSignupBtn").addEventListener("click", showSetupScreen);
+document.getElementById("backToLoginBtn").addEventListener("click", showLoginScreen);
+document.getElementById("setupBtn").addEventListener("click", function(){
+  var email = document.getElementById("setup_username").value.trim();
+  var pw = document.getElementById("setup_password").value;
+  var pw2 = document.getElementById("setup_password2").value;
+  var err = document.getElementById("setupError"); err.textContent="";
+  if(!email){ err.textContent="Enter your email address."; return; }
+  if(!pw || pw.length<6){ err.textContent="Password should be at least 6 characters."; return; }
+  if(pw!==pw2){ err.textContent="Passwords do not match."; return; }
+  auth.createUserWithEmailAndPassword(email, pw).then(function(cred){
+    return db.collection("users").doc(cred.user.uid).set({email:email, role:"guest"});
+  }).catch(function(fbErr){ err.textContent = fbErr.message; });
+});
+document.getElementById("setup_password2").addEventListener("keydown", function(ev){ if(ev.key==="Enter") document.getElementById("setupBtn").click(); });
+document.getElementById("loginBtn").addEventListener("click", function(){
+  var email = document.getElementById("login_username").value.trim();
+  var pw = document.getElementById("login_password").value;
+  var err = document.getElementById("loginError"); err.textContent="";
+  auth.signInWithEmailAndPassword(email, pw).catch(function(){ err.textContent="Incorrect email or password."; });
+});
+document.getElementById("login_password").addEventListener("keydown", function(ev){ if(ev.key==="Enter") document.getElementById("loginBtn").click(); });
+document.getElementById("logoutBtn").addEventListener("click", function(){ auth.signOut(); });
+auth.onAuthStateChanged(function(user){
+  if(user){
+    db.collection("users").doc(user.uid).get().then(function(snap){
+      var role = snap.exists? (snap.data().role||"guest") : "guest";
+      CURRENT_USER = {uid:user.uid, username:user.email, role:role};
+      fetchStateFromFirestore(function(){ showAppScreen(); startRealtimeSync(); });
+    }).catch(function(err){ toast("Could not load your account: "+err.message); });
+  } else {
+    CURRENT_USER = null;
+    if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc=null; }
+    showLoginScreen();
+  }
+});
+
+/* ================= SENDER DETAILS ================= */
+function populateSenderFields(){
+  document.getElementById("s_name").value = STATE.senderName;
+  document.getElementById("s_designation").value = STATE.senderDesignation;
+  document.getElementById("s_mobile").value = STATE.senderMobile;
+  document.getElementById("s_phone").value = STATE.senderPhone;
+}
+["s_name","s_designation","s_mobile","s_phone"].forEach(function(id){
+  document.getElementById(id).addEventListener("change", function(){
+    var map = {s_name:"senderName", s_designation:"senderDesignation", s_mobile:"senderMobile", s_phone:"senderPhone"};
+    STATE[map[id]] = this.value.trim();
+    saveData();
+  });
+});
+
+/* ================= CASE ENTRY & LIST ================= */
+var caseEditId = null;
+document.getElementById("c_fixedDate").value = "";
+wireSelectOrAdd("c_ps","c_ps_new");
+wireSelectOrAdd("c_tehsil","c_tehsil_new");
+
+function populateCaseEntryLists(){
+  populateSelectOrAdd("c_ps", STATE.policeStationMaster, "Select police station…");
+  populateSelectOrAdd("c_tehsil", STATE.tehsilMaster, "Select tehsil…");
+}
+function resetCaseForm(){
+  caseEditId = null;
+  document.getElementById("caseFormTitle").textContent = "Add a case";
+  document.getElementById("c_saveBtn").textContent = "Save case";
+  document.getElementById("c_cancelBtn").style.display = "none";
+  ["c_caseNo","c_title","c_vs","c_firNo","c_firDate","c_fixedDate","c_remarks"].forEach(function(id){ document.getElementById(id).value=""; });
+  document.getElementById("c_caseType").value = "BBA";
+  document.getElementById("c_firYear").value = "";
+  document.getElementById("c_district").value = "";
+  document.getElementById("c_bench").value = "";
+  document.getElementById("c_serial").value = "";
+  populateCaseEntryLists();
+  resetSelectOrAdd("c_ps","c_ps_new");
+  resetSelectOrAdd("c_tehsil","c_tehsil_new");
+}
+function addToMaster(list, value){
+  value = (value||"").trim();
+  if(!value) return list;
+  var exists = list.some(function(v){ return v.toLowerCase()===value.toLowerCase(); });
+  if(!exists) list.push(value);
+  return list;
+}
+document.getElementById("c_saveBtn").addEventListener("click", function(){
+  var caseNo = document.getElementById("c_caseNo").value.trim();
+  var title = document.getElementById("c_title").value.trim();
+  if(!caseNo){ toast("Case No / Crl.PLA No is required."); return; }
+  if(!title){ toast("Title of Case is required."); return; }
+  var ps = getSelectOrAddValue("c_ps","c_ps_new");
+  var tehsil = getSelectOrAddValue("c_tehsil","c_tehsil_new");
+  var rec = {
+    id: caseEditId || uid(),
+    caseNo: caseNo,
+    title: title,
+    vs: document.getElementById("c_vs").value.trim(),
+    caseType: document.getElementById("c_caseType").value,
+    firNo: document.getElementById("c_firNo").value.trim(),
+    firDate: document.getElementById("c_firDate").value,
+    firYear: document.getElementById("c_firYear").value,
+    ps: ps,
+    district: document.getElementById("c_district").value,
+    tehsil: tehsil,
+    bench: document.getElementById("c_bench").value,
+    serial: document.getElementById("c_serial").value,
+    fixedDate: document.getElementById("c_fixedDate").value,
+    remarks: document.getElementById("c_remarks").value.trim()
+  };
+  addToMaster(STATE.policeStationMaster, ps);
+  addToMaster(STATE.tehsilMaster, tehsil);
+  if(caseEditId){
+    var idx = STATE.cases.findIndex(function(x){ return x.id===caseEditId; });
+    STATE.cases[idx] = rec;
+    toast("Case updated.");
+  } else {
+    STATE.cases.push(rec);
+    toast("Case saved.");
+  }
+  saveData();
+  resetCaseForm();
+  renderCases();
+});
+document.getElementById("c_cancelBtn").addEventListener("click", resetCaseForm);
+
+function editCase(id){
+  var c = STATE.cases.find(function(x){ return x.id===id; });
+  if(!c) return;
+  caseEditId = id;
+  document.getElementById("caseFormTitle").textContent = "Edit case "+c.caseNo;
+  document.getElementById("c_saveBtn").textContent = "Update case";
+  document.getElementById("c_cancelBtn").style.display = "inline-block";
+  document.getElementById("c_caseNo").value = c.caseNo;
+  document.getElementById("c_title").value = c.title;
+  document.getElementById("c_vs").value = c.vs;
+  document.getElementById("c_caseType").value = c.caseType;
+  document.getElementById("c_firNo").value = c.firNo;
+  document.getElementById("c_firDate").value = c.firDate;
+  document.getElementById("c_firYear").value = c.firYear || "";
+  document.getElementById("c_district").value = c.district || "";
+  document.getElementById("c_bench").value = c.bench || "";
+  document.getElementById("c_serial").value = c.serial || "";
+  document.getElementById("c_fixedDate").value = c.fixedDate;
+  document.getElementById("c_remarks").value = c.remarks;
+  populateCaseEntryLists();
+  setSelectOrAddValue("c_ps","c_ps_new", c.ps);
+  setSelectOrAddValue("c_tehsil","c_tehsil_new", c.tehsil);
+  document.getElementById("caseFormCard").scrollIntoView({behavior:"smooth"});
+}
+function deleteCase(id){
+  if(!confirm("Delete this case entry?")) return;
+  STATE.cases = STATE.cases.filter(function(x){ return x.id!==id; });
+  saveData();
+  renderCases();
+  toast("Case deleted.");
+}
+
+function filteredCases(){
+  var caseNo = document.getElementById("f_caseNo").value;
+  var caseType = document.getElementById("f_caseType").value;
+  var district = document.getElementById("f_district").value;
+  var bench = document.getElementById("f_bench").value;
+  var serial = document.getElementById("f_serial").value;
+  var from = document.getElementById("f_from").value;
+  var to = document.getElementById("f_to").value;
+  return STATE.cases.filter(function(c){
+    if(caseNo && c.caseNo!==caseNo) return false;
+    if(caseType && c.caseType!==caseType) return false;
+    if(district && c.district!==district) return false;
+    if(bench && String(c.bench)!==bench) return false;
+    if(serial && String(c.serial)!==serial) return false;
+    if(from && c.fixedDate && c.fixedDate<from) return false;
+    if(to && c.fixedDate && c.fixedDate>to) return false;
+    return true;
+  });
+}
+function benchLabel(benchVal){
+  var n = parseInt(benchVal,10);
+  if(!n || n<1) return "";
+  var idx = Math.min(n,12)-1;
+  return ROMAN[idx] || String(n);
+}
+function renderCases(){
+  populateDistinctSelect(document.getElementById("f_caseNo"), STATE.cases.map(function(c){ return c.caseNo; }));
+  var list = filteredCases();
+  var body = document.getElementById("caseTableBody");
+  body.innerHTML = "";
+  if(list.length===0){
+    body.innerHTML = '<tr class="empty-row"><td colspan="13">No cases match. Add a case above, or clear filters.</td></tr>';
+  }
+  list.forEach(function(c){
+    var tr = document.createElement("tr");
+    var firDisplay = c.firNo? (c.firNo+(c.firDate? (" / "+c.firDate) : (c.firYear? (" / "+c.firYear) : ""))) : (c.firDate||c.firYear||"");
+    tr.innerHTML =
+      "<td>"+esc(c.caseNo)+"</td><td>"+esc(c.title)+"</td><td>"+esc(c.vs)+"</td><td>"+esc(c.caseType)+"</td>"+
+      "<td>"+esc(c.firNo)+"</td><td>"+esc(c.firDate||c.firYear)+"</td>"+
+      "<td>"+esc(c.ps)+"</td><td>"+esc(c.district)+"</td><td>"+esc(c.tehsil)+"</td>"+
+      "<td>"+esc(benchLabel(c.bench))+"</td><td>"+esc(c.serial)+"</td><td>"+esc(c.fixedDate)+"</td>"+
+      "<td class='row-actions'><button class='btn secondary small view-only-btn' data-notice='"+c.id+"'>Notice</button>"+
+      "<button class='btn ghost small' data-edit='"+c.id+"'>Edit</button>"+
+      (isAdmin()? "<button class='btn danger small' data-del='"+c.id+"'>Delete</button>":"")+"</td>";
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-notice]").forEach(function(el){ el.addEventListener("click", function(){ openNotice(el.dataset.notice); }); });
+  body.querySelectorAll("[data-edit]").forEach(function(el){ el.addEventListener("click", function(){ editCase(el.dataset.edit); }); });
+  body.querySelectorAll("[data-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteCase(el.dataset.del); }); });
+  document.getElementById("caseCount").textContent = STATE.cases.length+" case"+(STATE.cases.length===1?"":"s");
+}
+["f_caseNo","f_caseType","f_district","f_bench","f_serial","f_from","f_to"].forEach(function(id){
+  document.getElementById(id).addEventListener("change", renderCases);
+});
+document.getElementById("f_clear").addEventListener("click", function(){
+  ["f_caseNo","f_caseType","f_district","f_bench","f_serial","f_from","f_to"].forEach(function(id){ document.getElementById(id).value=""; });
+  renderCases();
+});
+
+/* ================= NOTICE (view + print) ================= */
+var I18N = {
+  en: {
+    title:"NOTICE", caseNo:"Case No / Crl.PLA No", titleOfCase:"Title of Case", vs:"Vs", caseType:"Case Type",
+    firNo:"F.I.R. No", firDate:"F.I.R. Date/Year", ps:"Police Station", district:"District", tehsil:"Tehsil",
+    bench:"Bench No", serial:"Cause List Serial No", fixedDate:"Case Fixed Date",
+    body: function(c, office){
+      return "To,\nThe Investigating Officer / Station House Officer,\nPolice Station "+(c.ps||"____________")+", District "+(c.district||"____________")+".\n\n"+
+        "Subject: NOTICE FOR PRODUCTION OF CASE RECORD — Case No/Crl.PLA No "+(c.caseNo||"____")+", "+(c.title||"____")+" Vs "+(c.vs||"____")+", FIR No "+(c.firNo||"____")+(c.firDate?(" dated "+c.firDate):(c.firYear?(" of year "+c.firYear):""))+", fixed for hearing on "+(c.fixedDate||"____")+" before Bench "+benchLabel(c.bench)+", at Serial No "+(c.serial||"____")+" of the Cause List.\n\n"+
+        "You are hereby directed to appear in person, along with the complete record pertaining to the above-mentioned case, at 8:00 AM at "+office+", and to remain present until the disposal of the matter. Non-compliance shall be viewed seriously and appropriate action shall be taken as deemed necessary.";
+    },
+    sender:"Sent by", name:"Name", designation:"Designation", mobile:"Mobile No", phone:"Office Phone",
+    stamp:"CAMP OFFICE\nPROSECUTOR\nGENERAL PUNJAB"
+  },
+  ur: {
+    title:"نوٹس", caseNo:"کیس نمبر / سی آر ایل پی ایل اے نمبر", titleOfCase:"عنوانِ مقدمہ", vs:"بمقابلہ", caseType:"کیس کی قسم",
+    firNo:"ایف آئی آر نمبر", firDate:"ایف آئی آر تاریخ/سال", ps:"تھانہ", district:"ضلع", tehsil:"تحصیل",
+    bench:"بینچ نمبر", serial:"کاز لسٹ سیریل نمبر", fixedDate:"مقدمہ کی مقررہ تاریخ",
+    body: function(c, office){
+      return "بخدمت،\nمحرر انسپکٹر / ایس ایچ او،\nتھانہ "+(c.ps||"____________")+"، ضلع "+(c.district||"____________")+"۔\n\n"+
+        "موضوع: مقدمہ کا ریکارڈ پیش کرنے کا نوٹس — کیس نمبر "+(c.caseNo||"____")+"، "+(c.title||"____")+" بمقابلہ "+(c.vs||"____")+"، ایف آئی آر نمبر "+(c.firNo||"____")+(c.firDate?(" مورخہ "+c.firDate):(c.firYear?(" سالِ "+c.firYear):""))+"، جو کہ بینچ "+benchLabel(c.bench)+" کے سامنے کاز لسٹ کے سیریل نمبر "+(c.serial||"____")+" پر مورخہ "+(c.fixedDate||"____")+" کو سماعت کے لیے مقرر ہے۔\n\n"+
+        "آپ کو بذریعہ ہذا ہدایت کی جاتی ہے کہ مذکورہ بالا مقدمہ سے متعلقہ مکمل ریکارڈ کے ساتھ بنفسِ نفیس صبح 8:00 بجے "+office+" میں حاضر ہوں، اور مقدمہ کے فیصلہ تک موجود رہیں۔ عدم تعمیل کو سنجیدگی سے لیا جائے گا اور ضرورت کے مطابق کارروائی کی جائے گی۔";
+    },
+    sender:"ارسال کنندہ", name:"نام", designation:"عہدہ", mobile:"موبائل نمبر", phone:"دفتری فون",
+    stamp:"کیمپ آفس\nپراسیکیوٹر\nجنرل پنجاب"
+  }
+};
+function openNotice(caseId){
+  var overlay = document.getElementById("noticeOverlay");
+  overlay.dataset.caseId = caseId;
+  overlay.style.display = "flex";
+  renderNotice();
+}
+function closeNotice(){ document.getElementById("noticeOverlay").style.display = "none"; }
+function renderNotice(){
+  var overlay = document.getElementById("noticeOverlay");
+  var c = STATE.cases.find(function(x){ return x.id===overlay.dataset.caseId; });
+  if(!c) return;
+  var lang = document.getElementById("n_lang").value;
+  var t = I18N[lang];
+  var rtl = lang==="ur";
+  var office = "Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad";
+
+  var html =
+    "<div class='notice-header'><h2>"+esc(t.title)+"</h2><div class='sub'>"+esc(office)+"</div></div>"+
+    "<div class='notice-meta'>"+
+      "<div><span class='label'>"+t.caseNo+": </span>"+esc(c.caseNo)+"</div>"+
+      "<div><span class='label'>"+t.titleOfCase+": </span>"+esc(c.title)+"</div>"+
+      "<div><span class='label'>"+t.vs+": </span>"+esc(c.vs)+"</div>"+
+      "<div><span class='label'>"+t.caseType+": </span>"+esc(c.caseType)+"</div>"+
+      "<div><span class='label'>"+t.firNo+": </span>"+esc(c.firNo)+"</div>"+
+      "<div><span class='label'>"+t.firDate+": </span>"+esc(c.firDate||c.firYear)+"</div>"+
+      "<div><span class='label'>"+t.ps+": </span>"+esc(c.ps)+"</div>"+
+      "<div><span class='label'>"+t.district+": </span>"+esc(c.district)+"</div>"+
+      "<div><span class='label'>"+t.tehsil+": </span>"+esc(c.tehsil)+"</div>"+
+      "<div><span class='label'>"+t.bench+": </span>"+esc(benchLabel(c.bench))+"</div>"+
+      "<div><span class='label'>"+t.serial+": </span>"+esc(c.serial)+"</div>"+
+      "<div><span class='label'>"+t.fixedDate+": </span>"+esc(c.fixedDate)+"</div>"+
+    "</div>"+
+    "<div class='notice-body'>"+esc(t.body(c, office)).replace(/\n/g,"<br>")+"</div>"+
+    "<div class='notice-sign-block'>"+
+      "<div class='notice-sender'>"+t.sender+":<br><b>"+esc(STATE.senderName)+"</b><br>"+t.designation+": "+esc(STATE.senderDesignation)+"<br>"+t.mobile+": "+esc(STATE.senderMobile)+"<br>"+t.phone+": "+esc(STATE.senderPhone)+"</div>"+
+      "<div class='stamp'>"+esc(t.stamp).replace(/\n/g,"<br>")+"</div>"+
+    "</div>";
+
+  var paper = document.getElementById("noticePaper");
+  paper.innerHTML = html;
+  paper.className = "notice-paper"+(rtl? " rtl":"");
+  paper.setAttribute("dir", rtl? "rtl":"ltr");
+}
+document.getElementById("n_lang").addEventListener("change", renderNotice);
+document.getElementById("n_paperSize").addEventListener("change", function(){ setPageSize(this.value); });
+document.getElementById("n_printBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); printCurrentView(); });
+document.getElementById("n_closeBtn").addEventListener("click", closeNotice);
+
+/* ---------------- init ---------------- */
+function renderAll(){
+  populateSenderFields();
+  populateCaseEntryLists();
+  renderCases();
+}
+
+})();
+</script>
+</body>
+</html>
