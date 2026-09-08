@@ -135,6 +135,62 @@
   .toast.show{opacity:1;transform:translateY(0);}
   footer.appfoot{text-align:center;color:var(--muted);font-size:11.5px;padding:18px;border-top:1px solid var(--border);}
 
+  /* ---------- Help / Guide ---------- */
+  .help-shell{background:#fff;width:100%;max-width:960px;max-height:92vh;overflow:auto;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4);}
+  .help-toolbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);background:#F7F6F3;position:sticky;top:0;z-index:2;}
+  .help-toolbar h2{font-size:17px;}
+  .help-body{padding:22px 26px 30px;}
+  .help-intro{font-size:13.5px;color:var(--text);line-height:1.6;margin:0 0 4px;}
+  .help-steps{margin:0;padding-left:20px;}
+  .help-steps li{margin-bottom:7px;font-size:13px;line-height:1.55;color:var(--text);}
+  .help-steps li:last-child{margin-bottom:0;}
+  details.faq-item{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#fff;}
+  details.faq-item summary{padding:11px 14px;cursor:pointer;font-weight:600;font-size:13.2px;color:var(--navy-dark);list-style:none;position:relative;padding-right:30px;}
+  details.faq-item summary::-webkit-details-marker{display:none;}
+  details.faq-item summary::after{content:"+";position:absolute;right:14px;top:9px;font-size:17px;color:var(--muted);}
+  details.faq-item[open] summary::after{content:"\2212";}
+  details.faq-item summary:hover{background:var(--navy-tint);}
+  details.faq-item .faq-answer{padding:0 14px 13px;font-size:13px;line-height:1.6;color:var(--text);}
+
+  /* ---------- Team Chat ---------- */
+  #chatToggleBtn{
+    position:fixed;right:20px;bottom:84px;z-index:996;
+    width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;
+    border:none;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:22px;padding:0;
+  }
+  #chatToggleBtn:hover{background:var(--navy-dark);}
+  #chatToggleBtn .chat-badge{
+    position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;
+    border-radius:999px;min-width:19px;height:19px;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  #chatPanel{
+    position:fixed;top:0;right:-340px;width:320px;height:100%;background:#fff;
+    border-left:1px solid var(--border);box-shadow:-4px 0 18px rgba(0,0,0,.15);
+    z-index:1000;display:flex;flex-direction:column;transition:right .25s ease;
+  }
+  #chatPanel.open{right:0;}
+  .chat-head{background:var(--navy);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-start;flex:0 0 auto;}
+  .chat-head h3{color:#fff;font-size:14px;margin:0;text-transform:none;letter-spacing:0;font-family:inherit;}
+  .chat-head .chat-online{font-size:11px;color:#CFE0EC;margin-top:3px;}
+  .chat-head button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1;flex:0 0 auto;}
+  .chat-head button:hover{background:rgba(255,255,255,.28);}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg);}
+  .chat-msg{max-width:88%;}
+  .chat-msg .chat-msg-meta{font-size:10.5px;color:var(--muted);margin-bottom:2px;}
+  .chat-msg .chat-msg-bubble{background:#fff;border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:12.8px;line-height:1.45;color:var(--text);word-wrap:break-word;white-space:pre-wrap;}
+  .chat-msg.mine{align-self:flex-end;}
+  .chat-msg.mine .chat-msg-bubble{background:var(--navy-tint);border-color:#C9DCEA;}
+  .chat-msg.mine .chat-msg-meta{text-align:right;}
+  .chat-empty{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px;}
+  .chat-input-bar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff;flex:0 0 auto;}
+  .chat-input-bar textarea{flex:1;resize:none;height:40px;padding:8px 10px;font-size:13px;font-family:inherit;}
+  .chat-input-bar button{border:none;background:var(--navy);color:#fff;border-radius:var(--radius);padding:0 14px;cursor:pointer;font-weight:600;font-family:inherit;}
+  .chat-input-bar button:hover{background:var(--navy-dark);}
+  @media(max-width:640px){ #chatPanel{width:100%;right:-100%;} }
+  @media print{ #chatToggleBtn, #chatPanel, .help-shell{display:none !important;} }
+
 /* ===== Prepared-by print sign-off + Punjab Govt masthead ===== */
 .pb-modal-overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
 .pb-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:400px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
@@ -228,6 +284,7 @@
     <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
     <button id="btnBackup" data-i18n="btn_backup">Backup (save file)</button>
     <button id="btnRestore" data-i18n="btn_restore">Restore from file</button>
+    <button id="btnHelp" data-i18n="nav_help">Help / Guide</button>
     <input type="file" id="restoreFile" accept="application/json" style="display:none">
     <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole"></span></span>
     <button id="logoutBtn" data-i18n="btn_logout">Log out</button>
@@ -250,7 +307,10 @@
     <div class="grid cols-4">
       <div class="field"><label data-i18n="lbl_caseNo">Case No / Crl.PLA No</label><input type="text" id="c_caseNo" placeholder="e.g. Crl.PLA-123/2026"></div>
       <div class="field" style="grid-column:span 2;"><label data-i18n="lbl_titleOfCase">Title of Case</label><input type="text" id="c_title" placeholder="e.g. Muhammad Ali"></div>
-      <div class="field"><label data-i18n="lbl_vsNo">Vs No</label><input type="text" id="c_vs" placeholder="e.g. The State"></div>
+      <div class="field"><label data-i18n="lbl_vsNo">Vs No</label>
+        <select id="c_vs"></select>
+        <input type="text" id="c_vs_new" placeholder="e.g. The State" style="display:none;margin-top:6px;">
+      </div>
     </div>
     <div class="grid cols-4" style="margin-top:12px;">
       <div class="field"><label data-i18n="lbl_caseType">Case Type</label>
@@ -338,7 +398,126 @@
   </div>
 </main>
 <footer class="appfoot">Case Notice System — data is stored online and shared across all signed-in users.</footer>
+
+<button id="chatToggleBtn" title="Team Chat">💬<span class="chat-badge" id="chatBadge" style="display:none;">0</span></button>
+<div id="chatPanel">
+  <div class="chat-head">
+    <div>
+      <h3 data-i18n="chat_title">Team Chat</h3>
+      <div class="chat-online" id="chatOnlineLabel"></div>
+    </div>
+    <button id="chatCloseBtn">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-bar">
+    <textarea id="chatInput" data-i18n-placeholder="chat_typeMessage" placeholder="Type a message…"></textarea>
+    <button id="chatSendBtn" data-i18n="chat_send">Send</button>
+  </div>
 </div>
+</div>
+
+<!-- ================= HELP / GUIDE OVERLAY ================= -->
+<div class="fullscreen-overlay" id="helpOverlay" style="display:none;">
+  <div class="help-shell">
+    <div class="help-toolbar">
+      <h2 data-i18n="help_title">Help &amp; User Guide</h2>
+      <button class="btn ghost" id="helpCloseBtn" data-i18n="btn_close">Close</button>
+    </div>
+    <div class="help-body">
+      <p class="help-intro" data-i18n="help_introText">This system is shared by the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. Only an Administrator can add, edit, or delete a case; a Guest can view, search, and print everything.</p>
+
+      <div class="card">
+        <h3 data-i18n="help_addCase_title">Add a Case</h3>
+        <ol class="help-steps">
+          <li data-i18n="help_addCase_s1">Fill in the Case No, Title of Case, Vs No, and Case Type (BBA / BAA / COB).</li>
+          <li data-i18n="help_addCase_s2">Add the F.I.R. No and date (or just the year if the exact date isn't known), Police Station, District and Tehsil — type a new one if it isn't already in the list.</li>
+          <li data-i18n="help_addCase_s3">Pick the Bench No and Case Fixed Date, then choose the Cause List Serial No — available serials only appear after the bench and date are set.</li>
+          <li data-i18n="help_addCase_s4">Click "Save case" to add it to the register below.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_sender_title">Notice Sender Details</h3>
+        <ol class="help-steps">
+          <li data-i18n="help_sender_s1">Fill in your Name, Designation, Mobile No and Office Phone once — this appears as the sender on every notice you print.</li>
+          <li data-i18n="help_sender_s2">Update it any time your designation or contact number changes; it applies to every notice printed after that.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_search_title">Search, Print and the Register</h3>
+        <ol class="help-steps">
+          <li data-i18n="help_search_s1">Use "Search &amp; filter cases" to narrow the list by Case No, Case Type, District, Bench No, Serial No, or a fixed-date range.</li>
+          <li data-i18n="help_search_s2">In the results table, click a row's print icon/button to generate that case's printable notice — choose paper size and language there, then Print.</li>
+          <li data-i18n="help_search_s3">An Administrator can Edit or Delete any row; a Guest can only view and print.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_report_title">Report</h3>
+        <ol class="help-steps">
+          <li data-i18n="help_report_s1">The Report card summarises cases by Bench, using whatever filters are currently set above it.</li>
+          <li data-i18n="help_report_s2">Set a fixed-date range in Search &amp; filter first if you want the report for a specific period.</li>
+          <li data-i18n="help_report_s3">Use "Export list (Excel)" or "Print list &amp; summary" to share or file a copy.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_data_title">Backup, Restore &amp; Access</h3>
+        <ol class="help-steps">
+          <li data-i18n="help_data_s1">Data is saved online immediately, shared by everyone signed in — use "Backup (save file)" occasionally as an extra copy.</li>
+          <li data-i18n="help_data_s2">"Restore from file" replaces all shared data with a backup file — Administrators only, since it affects everyone.</li>
+          <li data-i18n="help_data_s3">New accounts start as "Guest" (view-only); an existing Administrator must promote them from the Firebase console's user records.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="help_faqTitle">Frequently asked questions</h3>
+        <details class="faq-item">
+          <summary data-i18n="help_faq1_q">I signed up but I can't add, edit, or delete a case — why?</summary>
+          <div class="faq-answer" data-i18n="help_faq1_a">New accounts start as "Guest" (view-only) for safety. An existing Administrator needs to change your role before you can add, edit, or delete anything.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq2_q">How do I switch between English and Urdu?</summary>
+          <div class="faq-answer" data-i18n="help_faq2_a">Use the language dropdown at the top-right of the page for the whole system, or the separate language dropdown inside the notice print window for just that notice.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq3_q">The Police Station / District / Tehsil I need isn't in the list — what do I do?</summary>
+          <div class="faq-answer" data-i18n="help_faq3_a">Choose "Type a new one" (or the equivalent option) from that dropdown and type it in — it's saved and will appear in the list from then on.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq4_q">Where is my data stored — is it safe if this computer breaks?</summary>
+          <div class="faq-answer" data-i18n="help_faq4_a">Everything is saved online in this system's shared database, not just on this computer, so it stays safe even if this computer is lost or damaged. It's still good practice to use "Backup (save file)" now and then as an extra copy.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq5_q">Can more than one person use the system at the same time?</summary>
+          <div class="faq-answer" data-i18n="help_faq5_a">Yes — everyone signed in sees the same shared data. If two people save at almost the same moment, both changes are kept safely.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq6_q">What does the Cause List Serial No actually mean?</summary>
+          <div class="faq-answer" data-i18n="help_faq6_a">It's the case's position on that bench's cause list for the fixed date you chose — pick the bench and date first, and only the serial numbers available for that day will show up.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq7_q">How do I print a notice?</summary>
+          <div class="faq-answer" data-i18n="help_faq7_a">Open the case from the results table — a print-ready notice appears where you can pick paper size and language, then click Print.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq8_q">Can I get this data into Excel?</summary>
+          <div class="faq-answer" data-i18n="help_faq8_a">Yes — the Report card has an "Export list (Excel)" button so you can open the data directly in Excel.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq9_q">I forgot my password — what should I do?</summary>
+          <div class="faq-answer" data-i18n="help_faq9_a">This system doesn't yet have an automatic "forgot password" option. Please contact an Administrator for help.</div>
+        </details>
+        <details class="faq-item">
+          <summary data-i18n="help_faq10_q">Who can see this data — is it private to our office?</summary>
+          <div class="faq-answer" data-i18n="help_faq10_a">Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.</div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="pb-modal-overlay" id="pbModalOverlay">
   <div class="pb-modal">
     <h3>پرنٹ سے پہلے / Before Printing</h3>
@@ -365,17 +544,17 @@ var EN_ORD = ["First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eight
 var UR_ORD = ["پہلا","دوسرا","تیسرا","چوتھا","پانچواں","چھٹا","ساتواں","آٹھواں","نواں","دسواں","گیارہواں","بارہواں"];
 
 var firebaseConfig = {
-  apiKey: "AIzaSyAlaykxDovMrmEstR1hl1QqASjQ20pxu68",
-  authDomain: "case-notice-mesege-system.firebaseapp.com",
-  projectId: "case-notice-mesege-system",
-  storageBucket: "case-notice-mesege-system.firebasestorage.app",
-  messagingSenderId: "670759594390",
-  appId: "1:670759594390:web:7624e9c724561e542195b7"
+  apiKey: "AIzaSyCWl8dktUjAGF_JLMuZun2w3g_xnX3WBkU",
+  authDomain: "camp-office-project.firebaseapp.com",
+  projectId: "camp-office-project",
+  storageBucket: "camp-office-project.firebasestorage.app",
+  messagingSenderId: "246340921152",
+  appId: "1:246340921152:web:84b0a687a00a95523f23ca5"
 };
 firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 var db = firebase.firestore();
-var SHARED_DOC_REF = db.collection("appData").doc("shared");
+var SHARED_DOC_REF = db.collection("appData_case").doc("shared");
 var SUPPRESS_NEXT_SNAPSHOT_RENDER = false;
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -421,8 +600,55 @@ en: {
   th_fixedDate:"Fixed Date", th_actions:"Actions",
   report_title:"Report — the list above, summarised", report_desc:"Uses whatever Search & filter values are set above (case type, district, bench, fixed-date range, etc.) — set a date range there to get a report for a specific period.",
   th_cases:"Cases", btn_exportExcel:"Export list (Excel)", btn_printListSummary:"Print list & summary",
+  nav_help:"Help / Guide",
+  help_title:"Help & User Guide",
+  help_introText:"This system is shared by the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. Only an Administrator can add, edit, or delete a case; a Guest can view, search, and print everything.",
+  help_addCase_title:"Add a Case",
+  help_addCase_s1:"Fill in the Case No, Title of Case, Vs No, and Case Type (BBA / BAA / COB).",
+  help_addCase_s2:"Add the F.I.R. No and date (or just the year if the exact date isn't known), Police Station, District and Tehsil — type a new one if it isn't already in the list.",
+  help_addCase_s3:"Pick the Bench No and Case Fixed Date, then choose the Cause List Serial No — available serials only appear after the bench and date are set.",
+  help_addCase_s4:"Click \"Save case\" to add it to the register below.",
+  help_sender_title:"Notice Sender Details",
+  help_sender_s1:"Fill in your Name, Designation, Mobile No and Office Phone once — this appears as the sender on every notice you print.",
+  help_sender_s2:"Update it any time your designation or contact number changes; it applies to every notice printed after that.",
+  help_search_title:"Search, Print and the Register",
+  help_search_s1:"Use \"Search & filter cases\" to narrow the list by Case No, Case Type, District, Bench No, Serial No, or a fixed-date range.",
+  help_search_s2:"In the results table, click a row's print icon/button to generate that case's printable notice — choose paper size and language there, then Print.",
+  help_search_s3:"An Administrator can Edit or Delete any row; a Guest can only view and print.",
+  help_report_title:"Report",
+  help_report_s1:"The Report card summarises cases by Bench, using whatever filters are currently set above it.",
+  help_report_s2:"Set a fixed-date range in Search & filter first if you want the report for a specific period.",
+  help_report_s3:"Use \"Export list (Excel)\" or \"Print list & summary\" to share or file a copy.",
+  help_data_title:"Backup, Restore & Access",
+  help_data_s1:"Data is saved online immediately, shared by everyone signed in — use \"Backup (save file)\" occasionally as an extra copy.",
+  help_data_s2:"\"Restore from file\" replaces all shared data with a backup file — Administrators only, since it affects everyone.",
+  help_data_s3:"New accounts start as \"Guest\" (view-only); an existing Administrator must promote them from the Firebase console's user records.",
+  help_faqTitle:"Frequently asked questions",
+  help_faq1_q:"I signed up but I can't add, edit, or delete a case — why?",
+  help_faq1_a:"New accounts start as \"Guest\" (view-only) for safety. An existing Administrator needs to change your role before you can add, edit, or delete anything.",
+  help_faq2_q:"How do I switch between English and Urdu?",
+  help_faq2_a:"Use the language dropdown at the top-right of the page for the whole system, or the separate language dropdown inside the notice print window for just that notice.",
+  help_faq3_q:"The Police Station / District / Tehsil I need isn't in the list — what do I do?",
+  help_faq3_a:"Choose \"Type a new one\" (or the equivalent option) from that dropdown and type it in — it's saved and will appear in the list from then on.",
+  help_faq4_q:"Where is my data stored — is it safe if this computer breaks?",
+  help_faq4_a:"Everything is saved online in this system's shared database, not just on this computer, so it stays safe even if this computer is lost or damaged. It's still good practice to use \"Backup (save file)\" now and then as an extra copy.",
+  help_faq5_q:"Can more than one person use the system at the same time?",
+  help_faq5_a:"Yes — everyone signed in sees the same shared data. If two people save at almost the same moment, both changes are kept safely.",
+  help_faq6_q:"What does the Cause List Serial No actually mean?",
+  help_faq6_a:"It's the case's position on that bench's cause list for the fixed date you chose — pick the bench and date first, and only the serial numbers available for that day will show up.",
+  help_faq7_q:"How do I print a notice?",
+  help_faq7_a:"Open the case from the results table — a print-ready notice appears where you can pick paper size and language, then click Print.",
+  help_faq8_q:"Can I get this data into Excel?",
+  help_faq8_a:"Yes — the Report card has an \"Export list (Excel)\" button so you can open the data directly in Excel.",
+  help_faq9_q:"I forgot my password — what should I do?",
+  help_faq9_a:"This system doesn't yet have an automatic \"forgot password\" option. Please contact an Administrator for help.",
+  help_faq10_q:"Who can see this data — is it private to our office?",
+  help_faq10_a:"Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.",
+  chat_title:"Team Chat", chat_typeMessage:"Type a message…", chat_send:"Send",
+  chat_onlineCount:"{n} online", chat_noMessages:"No messages yet — say hello!",
+  chat_you:"You", chat_guest:"Guest",
   opt_selectDistrict:"Select district…", opt_selectBench:"Select bench…", opt_selectSerial:"Select serial…",
-  opt_selectPoliceStation:"Select police station…", opt_selectTehsil:"Select tehsil…", opt_addNewValue:"+ Add a new value…",
+  opt_selectPoliceStation:"Select police station…", opt_selectTehsil:"Select tehsil…", opt_selectVsNo:"Select Vs No…", opt_addNewValue:"+ Add a new value…",
   hint_allSerialsUsed_pre:"All 35 serials are already used for Bench ", hint_allSerialsUsed_post:" on this date. Choose another date or bench.",
   hint_someSerialsUsed_pre:"Already used for Bench ", hint_someSerialsUsed_mid:" on this date: ", hint_someSerialsUsed_post:" — only free serials are shown (", hint_someSerialsUsed_end:" left).",
   hint_allSerialsFree:"All 35 serials are free for this bench & date."
@@ -455,8 +681,55 @@ ur: {
   th_fixedDate:"مقررہ تاریخ", th_actions:"کارروائی",
   report_title:"رپورٹ — اوپر دی گئی فہرست کا خلاصہ", report_desc:"اوپر موجود Search اور filter کی موجودہ ویلیوز استعمال ہوتی ہیں (کیس کی قسم، ضلع، بینچ، مقررہ تاریخ کی رینج وغیرہ) — کسی خاص مدت کی رپورٹ کے لیے وہاں تاریخ کی رینج مقرر کریں۔",
   th_cases:"کیسز", btn_exportExcel:"فہرست ایکسپورٹ کریں (Excel)", btn_printListSummary:"فہرست اور خلاصہ پرنٹ کریں",
+  nav_help:"مدد / رہنمائی",
+  help_title:"مدد اور صارف رہنما",
+  help_introText:"یہ سسٹم پورے آفس کے لیے مشترکہ ہے — آپ جو کچھ بھی درج کریں گے وہ فوراً آن لائن محفوظ ہو جاتا ہے اور ہر سائن اِن یوزر کو وہی معلومات نظر آتی ہیں۔ صرف Administrator ہی کوئی کیس شامل، ترمیم یا حذف کر سکتا ہے؛ Guest ہر چیز دیکھ، تلاش اور پرنٹ کر سکتا ہے۔",
+  help_addCase_title:"کیس شامل کریں",
+  help_addCase_s1:"کیس نمبر، کیس کا عنوان، Vs نمبر اور کیس کی قسم (BBA / BAA / COB) درج کریں۔",
+  help_addCase_s2:"F.I.R. نمبر اور تاریخ (اگر تاریخ معلوم نہ ہو تو صرف سال)، پولیس اسٹیشن، ضلع اور تحصیل شامل کریں — اگر فہرست میں نہ ہو تو نئی ویلیو ٹائپ کریں۔",
+  help_addCase_s3:"بینچ نمبر اور کیس کی مقررہ تاریخ منتخب کریں، پھر کاز لسٹ سیریل نمبر چنیں — دستیاب سیریل نمبرز صرف بینچ اور تاریخ مقرر کرنے کے بعد نظر آتے ہیں۔",
+  help_addCase_s4:"\"Save case\" پر کلک کر کے نیچے رجسٹر میں شامل کر دیں۔",
+  help_sender_title:"نوٹس بھیجنے والے کی تفصیلات",
+  help_sender_s1:"اپنا نام، عہدہ، موبائل نمبر اور آفس فون ایک بار درج کریں — یہ ہر پرنٹ ہونے والے نوٹس پر بھیجنے والے کے طور پر ظاہر ہوگا۔",
+  help_sender_s2:"جب بھی عہدہ یا رابطہ نمبر بدلے، اسے اپڈیٹ کر لیں؛ یہ اس کے بعد پرنٹ ہونے والے ہر نوٹس پر لاگو ہوگا۔",
+  help_search_title:"تلاش، پرنٹ اور رجسٹر",
+  help_search_s1:"\"Search & filter cases\" استعمال کر کے فہرست کو کیس نمبر، کیس کی قسم، ضلع، بینچ نمبر، سیریل نمبر یا مقررہ تاریخ کی رینج کے مطابق محدود کریں۔",
+  help_search_s2:"نتائج کی جدول میں کسی قطار کا پرنٹ بٹن کلک کریں تو اس کیس کا قابلِ پرنٹ نوٹس بن جاتا ہے — وہاں کاغذ کا سائز اور زبان منتخب کر کے Print کریں۔",
+  help_search_s3:"Administrator کسی بھی قطار میں ترمیم یا حذف کر سکتا ہے؛ Guest صرف دیکھ اور پرنٹ کر سکتا ہے۔",
+  help_report_title:"رپورٹ",
+  help_report_s1:"Report کارڈ اوپر مقرر کردہ فلٹرز کے مطابق بینچ کے حساب سے کیسز کا خلاصہ دکھاتا ہے۔",
+  help_report_s2:"کسی خاص مدت کی رپورٹ کے لیے پہلے Search & filter میں مقررہ تاریخ کی رینج مقرر کریں۔",
+  help_report_s3:"کاپی محفوظ کرنے یا شیئر کرنے کے لیے \"Export list (Excel)\" یا \"Print list & summary\" استعمال کریں۔",
+  help_data_title:"بیک اپ، بحالی اور رسائی",
+  help_data_s1:"ڈیٹا فوراً آن لائن محفوظ ہوتا ہے، ہر سائن اِن یوزر کے ساتھ مشترکہ — کبھی کبھار \"Backup (save file)\" اضافی کاپی کے طور پر استعمال کریں۔",
+  help_data_s2:"\"Restore from file\" تمام مشترکہ ڈیٹا کو بیک اپ فائل سے بدل دیتا ہے — صرف Administrators، کیونکہ یہ سب کو متاثر کرتا ہے۔",
+  help_data_s3:"نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں؛ کسی موجودہ Administrator کو Firebase console کے یوزر ریکارڈز سے انہیں پروموٹ کرنا ہوگا۔",
+  help_faqTitle:"اکثر پوچھے گئے سوالات",
+  help_faq1_q:"میں نے اکاؤنٹ بنایا لیکن کوئی کیس شامل، ترمیم یا حذف نہیں کر سکتا — کیوں؟",
+  help_faq1_a:"حفاظت کی خاطر نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں۔ کسی موجودہ Administrator کو آپ کا role بدلنا ہوگا، تب ہی آپ کچھ شامل، ترمیم یا حذف کر سکیں گے۔",
+  help_faq2_q:"انگریزی اور اردو کے درمیان کیسے تبدیل کروں؟",
+  help_faq2_a:"پورے سسٹم کے لیے صفحے کے اوپر دائیں طرف زبان والی ڈراپ ڈاؤن استعمال کریں، یا صرف اس نوٹس کے لیے پرنٹ ونڈو کے اندر موجود الگ زبان ڈراپ ڈاؤن استعمال کریں۔",
+  help_faq3_q:"جس پولیس اسٹیشن / ضلع / تحصیل کی مجھے ضرورت ہے وہ فہرست میں نہیں — کیا کروں؟",
+  help_faq3_a:"اس ڈراپ ڈاؤن سے \"نئی ویلیو شامل کریں\" (یا اس جیسا آپشن) منتخب کریں اور ٹائپ کر دیں — یہ محفوظ ہو جائے گا اور اس کے بعد فہرست میں نظر آئے گا۔",
+  help_faq4_q:"میرا ڈیٹا کہاں محفوظ ہے — اگر یہ کمپیوٹر خراب ہو جائے تو کیا ہوگا؟",
+  help_faq4_a:"سب کچھ اس سسٹم کے مشترکہ آن لائن ڈیٹا بیس میں محفوظ ہے، صرف اس کمپیوٹر پر نہیں — اس لیے کمپیوٹر خراب یا گم ہونے پر بھی ڈیٹا محفوظ رہتا ہے۔ اس کے باوجود کبھی کبھار \"Backup (save file)\" استعمال کرنا ایک اضافی احتیاط کے طور پر اچھی عادت ہے۔",
+  help_faq5_q:"کیا ایک سے زیادہ لوگ بیک وقت سسٹم استعمال کر سکتے ہیں؟",
+  help_faq5_a:"جی ہاں — سائن اِن ہر شخص کو وہی مشترکہ ڈیٹا نظر آتا ہے۔ اگر دو لوگ تقریباً ایک ہی وقت میں Save کریں، تو دونوں کی تبدیلیاں محفوظ رہتی ہیں۔",
+  help_faq6_q:"کاز لسٹ سیریل نمبر دراصل کیا ہے؟",
+  help_faq6_a:"یہ آپ کی منتخب کردہ مقررہ تاریخ کو اس بینچ کی کاز لسٹ میں کیس کی پوزیشن ہے — پہلے بینچ اور تاریخ منتخب کریں، اسی دن کے دستیاب سیریل نمبرز ہی نظر آئیں گے۔",
+  help_faq7_q:"نوٹس کیسے پرنٹ کروں؟",
+  help_faq7_a:"نتائج کی جدول سے کیس کھولیں — ایک پرنٹ کے قابل نوٹس نظر آئے گا جہاں کاغذ کا سائز اور زبان منتخب کر کے Print پر کلک کریں۔",
+  help_faq8_q:"کیا میں یہ ڈیٹا ایکسل میں لے جا سکتا ہوں؟",
+  help_faq8_a:"جی ہاں — Report کارڈ میں \"Export list (Excel)\" بٹن موجود ہے جس سے آپ ڈیٹا براہ راست ایکسل میں کھول سکتے ہیں۔",
+  help_faq9_q:"میں اپنا پاس ورڈ بھول گیا — کیا کروں؟",
+  help_faq9_a:"اس سسٹم میں ابھی خودکار \"پاس ورڈ بھول گئے\" کی سہولت موجود نہیں۔ براہ کرم مدد کے لیے کسی Administrator سے رابطہ کریں۔",
+  help_faq10_q:"یہ ڈیٹا کون دیکھ سکتا ہے — کیا یہ صرف ہمارے آفس کے لیے محفوظ ہے؟",
+  help_faq10_a:"صرف وہی لوگ دیکھ سکتے ہیں جو اس سسٹم پر اپنے اکاؤنٹ سے سائن اِن ہوں۔ رسائی Administrator/Guest کے roles سے کنٹرول ہوتی ہے، اور مزید ڈیٹا بیس کے اپنے سیکیورٹی rules سے محفوظ ہے۔",
+  chat_title:"ٹیم چیٹ", chat_typeMessage:"پیغام لکھیں…", chat_send:"بھیجیں",
+  chat_onlineCount:"{n} آن لائن", chat_noMessages:"ابھی تک کوئی پیغام نہیں — سلام کہیں!",
+  chat_you:"آپ", chat_guest:"مہمان",
   opt_selectDistrict:"ضلع منتخب کریں…", opt_selectBench:"بینچ منتخب کریں…", opt_selectSerial:"سیریل منتخب کریں…",
-  opt_selectPoliceStation:"پولیس اسٹیشن منتخب کریں…", opt_selectTehsil:"تحصیل منتخب کریں…", opt_addNewValue:"+ نئی ویلیو شامل کریں…",
+  opt_selectPoliceStation:"پولیس اسٹیشن منتخب کریں…", opt_selectTehsil:"تحصیل منتخب کریں…", opt_selectVsNo:"بمقابلہ نمبر منتخب کریں…", opt_addNewValue:"+ نئی ویلیو شامل کریں…",
   hint_allSerialsUsed_pre:"بینچ ", hint_allSerialsUsed_post:" کے لیے اس تاریخ پر تمام 35 سیریل استعمال ہو چکے ہیں۔ کوئی اور تاریخ یا بینچ منتخب کریں۔",
   hint_someSerialsUsed_pre:"بینچ ", hint_someSerialsUsed_mid:" کے لیے اس تاریخ پر یہ استعمال ہو چکے ہیں: ", hint_someSerialsUsed_post:" — صرف خالی سیریل دکھائے جا رہے ہیں (", hint_someSerialsUsed_end:" باقی)۔",
   hint_allSerialsFree:"اس بینچ اور تاریخ کے لیے تمام 35 سیریل خالی ہیں۔"
@@ -472,7 +745,7 @@ function t(key){
    the list or the user's current selection. */
 var SELECT_PLACEHOLDER_KEYS = {
   c_ps:"opt_selectPoliceStation", c_district:"opt_selectDistrict", c_tehsil:"opt_selectTehsil",
-  c_bench:"opt_selectBench", c_serial:"opt_selectSerial",
+  c_bench:"opt_selectBench", c_serial:"opt_selectSerial", c_vs:"opt_selectVsNo",
   f_district:"opt_allDistricts", f_bench:"opt_allBenches", f_serial:"opt_allSerials"
 };
 function refreshSelectPlaceholders(){
@@ -490,11 +763,18 @@ function applyUILang(lang){
     var val = I18N_UI[lang][key];
     if(val!=null) el.textContent = val;
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el){
+    var key = el.getAttribute("data-i18n-placeholder");
+    var val = I18N_UI[lang][key];
+    if(val!=null) el.placeholder = val;
+  });
   refreshSelectPlaceholders();
   var sel = document.getElementById("uiLangSelect");
   if(sel) sel.value = lang;
   try{ localStorage.setItem(UI_LANG_STORAGE_KEY, lang); }catch(e){}
   if(typeof caseFormTitle_refresh === "function") caseFormTitle_refresh();
+  if(typeof renderChatOnline==="function") renderChatOnline();
+  if(typeof renderChatMessages==="function") renderChatMessages();
 }
 (function initUILang(){
   var saved = "en";
@@ -842,13 +1122,196 @@ auth.onAuthStateChanged(function(user){
     db.collection("users").doc(user.uid).get().then(function(snap){
       var role = snap.exists? (snap.data().role||"guest") : "guest";
       CURRENT_USER = {uid:user.uid, username:user.email, role:role};
-      fetchStateFromFirestore(function(){ showAppScreen(); startRealtimeSync(); });
+      fetchStateFromFirestore(function(){ showAppScreen(); startRealtimeSync(); startChat(); });
     }).catch(function(err){ toast("Could not load your account: "+err.message); });
   } else {
     CURRENT_USER = null;
     if(unsubscribeSharedDoc){ unsubscribeSharedDoc(); unsubscribeSharedDoc=null; }
+    stopChat();
     showLoginScreen();
   }
+});
+
+/* ================= TEAM CHAT ================= */
+var CHAT_MESSAGES = [];
+var CHAT_PRESENCE = {};        /* uid -> {email, role, lastSeen(ms)} */
+var chatUnsubMessages = null;
+var chatUnsubPresence = null;
+var chatHeartbeatTimer = null;
+var chatUnreadCount = 0;
+var CHAT_ONLINE_WINDOW_MS = 60000;   /* consider a user "online" if seen within the last 60s */
+var CHAT_HEARTBEAT_MS = 25000;
+
+function chatDisplayName(msg){
+  if(!msg) return "?";
+  return msg.senderName || (msg.senderEmail? msg.senderEmail.split("@")[0] : "?");
+}
+function tsToMillis(ts){
+  if(!ts) return 0;
+  if(typeof ts.toMillis==="function") return ts.toMillis();
+  if(ts.seconds!=null) return ts.seconds*1000;
+  return 0;
+}
+function fmtChatTime(ms){
+  if(!ms) return "";
+  var d = new Date(ms);
+  var h = d.getHours(), m = d.getMinutes();
+  var ap = h>=12? "PM":"AM";
+  var h12 = h%12; if(h12===0) h12=12;
+  return h12+":"+(m<10?"0":"")+m+" "+ap;
+}
+function startChat(){
+  if(!CURRENT_USER) return;
+  stopChat(); /* guard against double-start */
+
+  var chatFirstSnapshot = true;
+  chatUnsubMessages = db.collection("chatMessages").orderBy("timestamp","desc").limit(150)
+    .onSnapshot(function(snap){
+      var list = [];
+      snap.forEach(function(doc){ list.push(doc.data()); });
+      list.reverse();
+      CHAT_MESSAGES = list;
+      if(!chatFirstSnapshot){
+        var panel = document.getElementById("chatPanel");
+        var isOpen = panel && panel.classList.contains("open");
+        snap.docChanges().forEach(function(ch){
+          if(ch.type==="added"){
+            var d = ch.doc.data();
+            if(!isOpen && (!CURRENT_USER || d.senderUid!==CURRENT_USER.uid)) chatUnreadCount++;
+          }
+        });
+        updateChatBadge();
+      }
+      chatFirstSnapshot = false;
+      renderChatMessages();
+    }, function(err){
+      /* Most likely cause: Firestore security rules on this project don't
+         yet allow the "chatMessages" collection — see firestore.rules file
+         for the block that needs to be added. Fail quietly in the UI. */
+      console.error("Chat messages listener error:", err);
+    });
+
+  chatUnsubPresence = db.collection("presence").onSnapshot(function(snap){
+    var map = {};
+    snap.forEach(function(doc){
+      var d = doc.data();
+      map[doc.id] = {email:d.email, role:d.role, lastSeen:tsToMillis(d.lastSeen)};
+    });
+    CHAT_PRESENCE = map;
+    renderChatOnline();
+  }, function(err){
+    console.error("Presence listener error:", err);
+  });
+
+  sendPresenceHeartbeat();
+  chatHeartbeatTimer = setInterval(sendPresenceHeartbeat, CHAT_HEARTBEAT_MS);
+}
+function stopChat(){
+  if(chatUnsubMessages){ chatUnsubMessages(); chatUnsubMessages = null; }
+  if(chatUnsubPresence){ chatUnsubPresence(); chatUnsubPresence = null; }
+  if(chatHeartbeatTimer){ clearInterval(chatHeartbeatTimer); chatHeartbeatTimer = null; }
+  CHAT_MESSAGES = [];
+  CHAT_PRESENCE = {};
+  chatUnreadCount = 0;
+  updateChatBadge();
+}
+function sendPresenceHeartbeat(){
+  if(!CURRENT_USER) return;
+  db.collection("presence").doc(CURRENT_USER.uid).set({
+    email: CURRENT_USER.username,
+    role: isAdmin()? "admin":"guest",
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge:true}).catch(function(err){ console.error("Presence heartbeat failed:", err); });
+}
+function renderChatOnline(){
+  var lang = document.documentElement.getAttribute("data-ui-lang") || "en";
+  var now = Date.now();
+  var n = 0;
+  var presence = CHAT_PRESENCE || {};
+  Object.keys(presence).forEach(function(uid){
+    if(now - presence[uid].lastSeen < CHAT_ONLINE_WINDOW_MS) n++;
+  });
+  var label = (I18N_UI[lang].chat_onlineCount || "{n} online").replace("{n}", n);
+  var el = document.getElementById("chatOnlineLabel");
+  if(el) el.textContent = label;
+}
+function escChat(s){
+  s = (s==null)? "" : String(s);
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function renderChatMessages(){
+  var lang = document.documentElement.getAttribute("data-ui-lang") || "en";
+  var body = document.getElementById("chatMessages");
+  if(!body) return;
+  var wasNearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 60;
+  body.innerHTML = "";
+  CHAT_MESSAGES = CHAT_MESSAGES || [];
+  if(CHAT_MESSAGES.length===0){
+    body.innerHTML = "<div class='chat-empty'>"+escChat(I18N_UI[lang].chat_noMessages||"No messages yet — say hello!")+"</div>";
+    return;
+  }
+  CHAT_MESSAGES.forEach(function(msg){
+    var mine = CURRENT_USER && msg.senderUid===CURRENT_USER.uid;
+    var name = mine? (I18N_UI[lang].chat_you||"You") : chatDisplayName(msg);
+    var time = fmtChatTime(tsToMillis(msg.timestamp));
+    var div = document.createElement("div");
+    div.className = "chat-msg"+(mine?" mine":"");
+    div.innerHTML = "<div class='chat-msg-meta'>"+escChat(name)+(time? " · "+escChat(time):"")+"</div>"+
+      "<div class='chat-msg-bubble'>"+escChat(msg.text)+"</div>";
+    body.appendChild(div);
+  });
+  if(wasNearBottom) body.scrollTop = body.scrollHeight;
+}
+function updateChatBadge(){
+  var badge = document.getElementById("chatBadge");
+  if(!badge) return;
+  if(chatUnreadCount>0){ badge.style.display="flex"; badge.textContent = chatUnreadCount>99? "99+":chatUnreadCount; }
+  else { badge.style.display="none"; }
+}
+function sendChatMessage(){
+  if(!CURRENT_USER) return;
+  var input = document.getElementById("chatInput");
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = "";
+  db.collection("chatMessages").add({
+    text: text,
+    senderUid: CURRENT_USER.uid,
+    senderEmail: CURRENT_USER.username,
+    senderName: CURRENT_USER.username? CURRENT_USER.username.split("@")[0] : "",
+    senderRole: isAdmin()? "admin":"guest",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(err){
+    toast("Could not send message: "+err.message);
+    input.value = text; /* give it back so nothing is lost */
+  });
+}
+document.getElementById("chatSendBtn").addEventListener("click", sendChatMessage);
+document.getElementById("chatInput").addEventListener("keydown", function(ev){
+  if(ev.key==="Enter" && !ev.shiftKey){ ev.preventDefault(); sendChatMessage(); }
+});
+document.getElementById("chatToggleBtn").addEventListener("click", function(){
+  var panel = document.getElementById("chatPanel");
+  var opening = !panel.classList.contains("open");
+  panel.classList.toggle("open");
+  if(opening){
+    chatUnreadCount = 0;
+    updateChatBadge();
+    var body = document.getElementById("chatMessages");
+    if(body) body.scrollTop = body.scrollHeight;
+    document.getElementById("chatInput").focus();
+  }
+});
+document.getElementById("chatCloseBtn").addEventListener("click", function(){
+  document.getElementById("chatPanel").classList.remove("open");
+});
+
+/* ================= HELP / GUIDE OVERLAY ================= */
+document.getElementById("btnHelp").addEventListener("click", function(){
+  document.getElementById("helpOverlay").style.display = "flex";
+});
+document.getElementById("helpCloseBtn").addEventListener("click", function(){
+  document.getElementById("helpOverlay").style.display = "none";
 });
 
 /* ================= SENDER DETAILS ================= */
@@ -871,10 +1334,12 @@ var caseEditId = null;
 document.getElementById("c_fixedDate").value = "";
 wireSelectOrAdd("c_ps","c_ps_new");
 wireSelectOrAdd("c_tehsil","c_tehsil_new");
+wireSelectOrAdd("c_vs","c_vs_new");
 
 function populateCaseEntryLists(){
   populateSelectOrAdd("c_ps", STATE.policeStationMaster, t("opt_selectPoliceStation"));
   populateSelectOrAdd("c_tehsil", STATE.tehsilMaster, t("opt_selectTehsil"));
+  populateSelectOrAdd("c_vs", STATE.cases.map(function(c){ return c.vs; }), t("opt_selectVsNo"));
 }
 function caseFormTitle_refresh(){
   var titleEl = document.getElementById("caseFormTitle");
@@ -893,7 +1358,7 @@ function resetCaseForm(){
   caseEditId = null;
   caseFormTitle_refresh();
   document.getElementById("c_cancelBtn").style.display = "none";
-  ["c_caseNo","c_title","c_vs","c_firNo","c_firDate","c_fixedDate","c_remarks"].forEach(function(id){ document.getElementById(id).value=""; });
+  ["c_caseNo","c_title","c_firNo","c_firDate","c_fixedDate","c_remarks"].forEach(function(id){ document.getElementById(id).value=""; });
   document.getElementById("c_caseType").value = "BBA";
   document.getElementById("c_firYear").value = "";
   document.getElementById("c_district").value = "";
@@ -903,6 +1368,7 @@ function resetCaseForm(){
   populateCaseEntryLists();
   resetSelectOrAdd("c_ps","c_ps_new");
   resetSelectOrAdd("c_tehsil","c_tehsil_new");
+  resetSelectOrAdd("c_vs","c_vs_new");
 }
 function addToMaster(list, value){
   value = (value||"").trim();
@@ -924,7 +1390,7 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
     id: caseEditId || uid(),
     caseNo: caseNo,
     title: title,
-    vs: document.getElementById("c_vs").value.trim(),
+    vs: getSelectOrAddValue("c_vs","c_vs_new"),
     caseType: document.getElementById("c_caseType").value,
     firNo: document.getElementById("c_firNo").value.trim(),
     firDate: document.getElementById("c_firDate").value,
@@ -961,7 +1427,6 @@ function editCase(id){
   document.getElementById("c_cancelBtn").style.display = "inline-block";
   document.getElementById("c_caseNo").value = c.caseNo;
   document.getElementById("c_title").value = c.title;
-  document.getElementById("c_vs").value = c.vs;
   document.getElementById("c_caseType").value = c.caseType;
   document.getElementById("c_firNo").value = c.firNo;
   document.getElementById("c_firDate").value = c.firDate;
@@ -975,6 +1440,7 @@ function editCase(id){
   populateCaseEntryLists();
   setSelectOrAddValue("c_ps","c_ps_new", c.ps);
   setSelectOrAddValue("c_tehsil","c_tehsil_new", c.tehsil);
+  setSelectOrAddValue("c_vs","c_vs_new", c.vs);
   document.getElementById("caseFormCard").scrollIntoView({behavior:"smooth"});
 }
 function deleteCase(id){
