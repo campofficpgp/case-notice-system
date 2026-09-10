@@ -166,7 +166,7 @@
   }
   .stamp::before{content:"";position:absolute;inset:6px;border:1px dashed #7a1010;border-radius:50%;}
   @media print{
-    nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.card.entry-form,.auth-screen,footer{display:none !important;}
+    nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,.auth-screen,footer{display:none !important;}
     body{background:#fff;}
     body:not(.notice-mode) .notice-overlay{display:none !important;}
     body.notice-mode > #appMain, body.notice-mode > .toast{display:none !important;}
@@ -174,6 +174,10 @@
        site-wide Punjab masthead would otherwise print a second, redundant office header above
        it — the same kind of "double header" bug found and fixed elsewhere in the topbar. */
     body.notice-mode > .pb-print-masthead{display:none !important;}
+    /* Same reasoning: the general report header/footer fields (Item 18) are irrelevant on a
+       Notice printout — that print type gets its own extra-fields block generated inside
+       renderNotice()'s own HTML, inside #noticePaper, instead. */
+    body.notice-mode > .pb-print-extra-fields{display:none !important;}
     body.notice-mode .notice-toolbar{display:none !important;}
     body.notice-mode .notice-fields-toolbar{display:none !important;}
     body.notice-mode .notice-overlay{position:static !important;background:none !important;padding:0 !important;}
@@ -262,6 +266,7 @@
 .pb-print-sig-img{height:42px;max-width:160px;object-fit:contain;display:block;margin-bottom:2px;}
 .pb-print-masthead{display:none;}
 .pb-print-signfoot{display:none;}
+.pb-print-extra-fields{display:none;}
 @media print{
   .pb-print-masthead{display:flex !important;align-items:center;gap:12px;border-bottom:2px solid #B8860B;padding-bottom:8px;margin-bottom:14px;}
   .pb-print-masthead img{height:56px;width:auto;}
@@ -269,7 +274,26 @@
   .pb-print-masthead .pb-mh-t1{font-weight:700;font-size:15px;color:#153A5B;}
   .pb-print-masthead .pb-mh-t2{font-size:11px;color:#444;}
   .pb-print-signfoot{display:block !important;margin-top:24px;padding-top:8px;border-top:1px solid #999;font-size:12px;color:#222;}
+  .pb-print-extra-fields{display:block !important;font-size:11.5px;color:#222;margin-bottom:12px;line-height:1.7;border-bottom:1px dashed #999;padding-bottom:8px;}
+  .pb-print-extra-fields .hf-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 20px;}
+  .notice-paper .pb-print-extra-fields{border-bottom:1px dashed #999;margin-bottom:16px;}
 }
+.hf-modal-overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
+.hf-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:420px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.hf-modal h3{margin:0 0 4px;font-size:16px;color:#153A5B;}
+.hf-modal .pb-sub{font-size:12px;color:#666;margin-bottom:14px;line-height:1.7;}
+.hf-modal .field{margin-bottom:12px;}
+.hf-modal label{display:block;font-size:12.5px;margin-bottom:4px;color:#333;}
+.hf-modal input[type=text]{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box;font-family:inherit;}
+.hf-check-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #eee;}
+.hf-check-row:last-of-type{border-bottom:none;}
+.hf-check-row input[type=checkbox]{margin-top:3px;}
+.hf-check-row .hf-check-label{font-size:13px;color:#222;display:block;}
+.hf-check-row .hf-check-sub{font-size:11px;color:#777;}
+.hf-modal .pb-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+.hf-modal button{padding:8px 18px;border-radius:6px;border:none;cursor:pointer;font-size:13.5px;}
+.hf-modal .pb-cancel{background:#eee;color:#333;}
+.hf-modal .pb-confirm{background:#1F4E78;color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
@@ -280,6 +304,7 @@
     <div class="pb-mh-t2">Supreme Court of Pakistan, Islamabad</div>
   </div>
 </div>
+<div class="pb-print-extra-fields" id="pbPrintExtraFields"></div>
 
 
 <!-- ================= AUTH ================= -->
@@ -320,6 +345,7 @@
         <select id="n_lang"><option value="en">English</option><option value="ur">اردو</option></select>
       </div>
       <button class="btn" id="n_printBtn" data-i18n="btn_print">Print</button>
+      <button id="hfConfigBtn_notice" type="button" class="btn ghost small" style="display:none;" title="Notice header/footer fields / نوٹس ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button class="btn ghost" id="n_closeBtn" data-i18n="btn_close">Close</button>
     </div>
     <div class="notice-fields-toolbar">
@@ -355,6 +381,7 @@
       </select>
     </label>
     <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
+    <button id="hfConfigBtn_causelist" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
     <button id="btnBackup" data-i18n="btn_backup">Backup (save file)</button>
     <button id="btnRestore" data-i18n="btn_restore">Restore from file</button>
     <button id="btnHelp" data-i18n="nav_help">Help / Guide</button>
@@ -458,8 +485,8 @@
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th data-i18n="th_caseNo">Case No</th><th data-i18n="th_title">Title</th><th data-i18n="th_vs">Vs</th><th data-i18n="th_type">Type</th><th data-i18n="th_firNo">FIR No</th><th data-i18n="th_firDateYear">FIR Date/Year</th>
-        <th data-i18n="th_policeStation">Police Station</th><th data-i18n="th_district">District</th><th data-i18n="th_tehsil">Tehsil</th><th data-i18n="th_bench">Bench</th><th data-i18n="th_serial">Serial#</th><th data-i18n="th_fixedDate">Fixed Date</th><th data-i18n="th_actions">Actions</th>
+        <th data-col="caseNo" data-i18n="th_caseNo">Case No</th><th data-col="title" data-i18n="th_title">Title</th><th data-col="vs" data-i18n="th_vs">Vs</th><th data-col="caseType" data-i18n="th_type">Type</th><th data-col="firNo" data-i18n="th_firNo">FIR No</th><th data-col="firDateYear" data-i18n="th_firDateYear">FIR Date/Year</th>
+        <th data-col="ps" data-i18n="th_policeStation">Police Station</th><th data-col="district" data-i18n="th_district">District</th><th data-col="tehsil" data-i18n="th_tehsil">Tehsil</th><th data-col="bench" data-i18n="th_bench">Bench</th><th data-col="serial" data-i18n="th_serial">Serial#</th><th data-col="fixedDate" data-i18n="th_fixedDate">Fixed Date</th><th class="row-actions-th" data-i18n="th_actions">Actions</th>
       </tr></thead>
       <tbody id="caseTableBody"></tbody>
     </table>
@@ -477,6 +504,7 @@
     </div>
     <div class="btnbar" style="margin-top:12px;">
       <button class="btn secondary" id="r_exportBtn" data-i18n="btn_exportExcel">Export list (Excel)</button>
+      <button class="btn ghost" id="colsConfigBtn" data-i18n="btn_selectColumns" style="display:none;">☰ Select print columns</button>
       <button class="btn ghost" id="r_printBtn" data-i18n="btn_printListSummary">Print list &amp; summary</button>
     </div>
   </div>
@@ -628,6 +656,45 @@
   </div>
 </div>
 <div class="pb-print-signfoot" id="pbPrintSignfoot"></div>
+<div class="hf-modal-overlay" id="hfModalOverlay">
+  <div class="hf-modal">
+    <h3 id="hfModalTitle">Header/Footer Fields</h3>
+    <div class="pb-sub">اس پرنٹ پر یہ اختیاری فیلڈز دکھانی ہیں یا نہیں، منتخب کریں (صرف Administrator کو نظر آتا ہے)۔<br>Choose which optional fields should appear on this print (Administrator only).</div>
+    <div class="field"><label>دفتر کا پتہ / Office Address</label><input type="text" id="hfOfficeAddress" placeholder="e.g. Camp Office, Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></div>
+    <div class="field"><label>رابطہ نمبر / Contact Number</label><input type="text" id="hfOfficeContact" placeholder="e.g. 051-1234567"></div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkDateDiary">
+      <label for="hfChkDateDiary"><span class="hf-check-label">تاریخ اور ڈائری نمبر / Date &amp; Diary No.</span><span class="hf-check-sub">Prints today's date, with a blank line for the diary number.</span></label>
+    </div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkAddress">
+      <label for="hfChkAddress"><span class="hf-check-label">دفتر کا پتہ/رابطہ نمبر / Office Address &amp; Contact</span><span class="hf-check-sub">Prints the office address and contact number set above.</span></label>
+    </div>
+    <div class="hf-check-row" id="hfChkPreparedRow">
+      <input type="checkbox" id="hfChkPrepared">
+      <label for="hfChkPrepared"><span class="hf-check-label">تیار کردہ افسر کا نام/عہدہ / Prepared By Name &amp; Designation</span><span class="hf-check-sub">Prints the name/designation saved in "Sender / Prepared By" settings.</span></label>
+    </div>
+    <div class="hf-check-row">
+      <input type="checkbox" id="hfChkReference">
+      <label for="hfChkReference"><span class="hf-check-label">حوالہ نمبر / Reference No.</span><span class="hf-check-sub">Prints a blank line for a reference/file number.</span></label>
+    </div>
+    <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="hfCancelBtn">Cancel</button>
+      <button type="button" class="pb-confirm" id="hfSaveBtn">محفوظ کریں / Save</button>
+    </div>
+  </div>
+</div>
+<div class="hf-modal-overlay" id="colsModalOverlay">
+  <div class="hf-modal">
+    <h3>Select Print Columns</h3>
+    <div class="pb-sub">اس فہرست کے پرنٹ میں کون سے کالم شامل ہوں، منتخب کریں (صرف Administrator کو نظر آتا ہے؛ Excel ایکسپورٹ ہمیشہ مکمل رہتا ہے، یہ صرف پرنٹ پر لاگو ہوتا ہے)۔<br>Choose which columns appear on the printed Case List (Administrator only; the Excel export always keeps every field — this setting only affects print).</div>
+    <div id="colsCheckboxWrap"></div>
+    <div class="pb-actions">
+      <button type="button" class="pb-cancel" id="colsCancelBtn">Cancel</button>
+      <button type="button" class="pb-confirm" id="colsSaveBtn">محفوظ کریں / Save</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -745,7 +812,7 @@ en: {
   th_policeStation:"Police Station", th_district:"District", th_tehsil:"Tehsil", th_bench:"Bench", th_serial:"Serial#",
   th_fixedDate:"Fixed Date", th_actions:"Actions",
   report_title:"Report — the list above, summarised", report_desc:"Uses whatever Search & filter values are set above (case type, district, bench, fixed-date range, etc.) — set a date range there to get a report for a specific period.",
-  th_cases:"Cases", btn_exportExcel:"Export list (Excel)", btn_printListSummary:"Print list & summary",
+  th_cases:"Cases", btn_exportExcel:"Export list (Excel)", btn_printListSummary:"Print list & summary", btn_selectColumns:"☰ Select print columns",
   nav_help:"Help / Guide",
   help_title:"Help & User Guide",
   help_introText:"This system is shared by the whole office — everything you enter is saved online immediately and every other signed-in user sees the same information. Only an Administrator can add, edit, or delete a case; a Guest can view, search, and print everything.",
@@ -828,7 +895,7 @@ ur: {
   th_policeStation:"پولیس اسٹیشن", th_district:"ضلع", th_tehsil:"تحصیل", th_bench:"بینچ", th_serial:"سیریل#",
   th_fixedDate:"مقررہ تاریخ", th_actions:"کارروائی",
   report_title:"رپورٹ — اوپر دی گئی فہرست کا خلاصہ", report_desc:"اوپر موجود Search اور filter کی موجودہ ویلیوز استعمال ہوتی ہیں (کیس کی قسم، ضلع، بینچ، مقررہ تاریخ کی رینج وغیرہ) — کسی خاص مدت کی رپورٹ کے لیے وہاں تاریخ کی رینج مقرر کریں۔",
-  th_cases:"کیسز", btn_exportExcel:"فہرست ایکسپورٹ کریں (Excel)", btn_printListSummary:"فہرست اور خلاصہ پرنٹ کریں",
+  th_cases:"کیسز", btn_exportExcel:"فہرست ایکسپورٹ کریں (Excel)", btn_printListSummary:"فہرست اور خلاصہ پرنٹ کریں", btn_selectColumns:"☰ پرنٹ کالم منتخب کریں",
   nav_help:"مدد / رہنمائی",
   help_title:"مدد اور صارف رہنما",
   help_introText:"یہ سسٹم پورے آفس کے لیے مشترکہ ہے — آپ جو کچھ بھی درج کریں گے وہ فوراً آن لائن محفوظ ہو جاتا ہے اور ہر سائن اِن یوزر کو وہی معلومات نظر آتی ہیں۔ صرف Administrator ہی کوئی کیس شامل، ترمیم یا حذف کر سکتا ہے؛ Guest ہر چیز دیکھ، تلاش اور پرنٹ کر سکتا ہے۔",
@@ -936,6 +1003,10 @@ function applyUILang(lang){
    alongside the label/value definitions near renderNotice) so normalizeData can build a safe
    "show everything by default" default without depending on code defined later in the file. */
 var NOTICE_FIELD_KEYS = ["caseNo","titleOfCase","vs","caseType","firNo","underSection","firDate","ps","district","tehsil","bench","serial","fixedDate"];
+/* Item 38: keys of every column in the Case List / Cause List & Summary print — same reasoning
+   as NOTICE_FIELD_KEYS above, defined ahead of normalizeData so a safe all-shown default can be
+   built without depending on code defined later in the file. */
+var CASE_LIST_COLUMN_KEYS = ["caseNo","title","vs","caseType","firNo","firDateYear","ps","district","tehsil","bench","serial","fixedDate"];
 function normalizeData(data){
   data.cases = data.cases || [];
   data.policeStationMaster = data.policeStationMaster || [];
@@ -947,12 +1018,24 @@ function normalizeData(data){
   data.senderDesignation = data.senderDesignation || "Focal Person";
   data.senderMobile = data.senderMobile || "0300-0000000";
   data.senderPhone = data.senderPhone || "051-9202466";
+  data.officeAddress = data.officeAddress || "";
+  data.officeContact = data.officeContact || "";
+  data.headerFooterConfig = data.headerFooterConfig || {};
   if(!data.noticePrintFields){
     data.noticePrintFields = {};
     NOTICE_FIELD_KEYS.forEach(function(k){ data.noticePrintFields[k] = true; });
   } else {
     /* fill in any field added after this office last saved its selection, defaulting new fields to shown */
     NOTICE_FIELD_KEYS.forEach(function(k){ if(data.noticePrintFields[k]===undefined) data.noticePrintFields[k] = true; });
+  }
+  /* Item 38: which columns of the Case List / Cause List & Summary print include. Excel export
+     (r_exportBtn) is deliberately left unaffected — it's a full data-record export, not a
+     page meant to fit on paper, so it always includes every field regardless of this setting. */
+  if(!data.caseListColumns){
+    data.caseListColumns = {};
+    CASE_LIST_COLUMN_KEYS.forEach(function(k){ data.caseListColumns[k] = true; });
+  } else {
+    CASE_LIST_COLUMN_KEYS.forEach(function(k){ if(data.caseListColumns[k]===undefined) data.caseListColumns[k] = true; });
   }
   return data;
 }
@@ -980,13 +1063,23 @@ function mergeStringList(serverArr, localArr){
   });
   return merged;
 }
+/* Dict fields (plain key->value objects, not id-keyed arrays): merge key-by-key so one
+   admin saving the "notice" key's config can't wipe out another admin's concurrent save
+   of the "causelist" key's config (or vice versa) — same pattern as the array merges above. */
+function mergeDict(serverObj, localObj){
+  var out = Object.assign({}, serverObj||{});
+  Object.keys(localObj||{}).forEach(function(k){ out[k] = localObj[k]; });
+  return out;
+}
 var MERGE_BY_ID_FIELDS = ["cases"];
 var MERGE_STRINGLIST_FIELDS = ["policeStationMaster","tehsilMaster","caseTypeMaster","caseNoPrefixMaster","underSectionMaster"];
+var MERGE_DICT_FIELDS = ["headerFooterConfig","caseListColumns"];
 function mergeStates(serverState, localState){
   var merged = {};
   MERGE_BY_ID_FIELDS.forEach(function(f){ merged[f] = mergeArrayById(serverState[f], localState[f]); });
   MERGE_STRINGLIST_FIELDS.forEach(function(f){ merged[f] = mergeStringList(serverState[f], localState[f]); });
-  var handled = MERGE_BY_ID_FIELDS.concat(MERGE_STRINGLIST_FIELDS);
+  MERGE_DICT_FIELDS.forEach(function(f){ merged[f] = mergeDict(serverState[f], localState[f]); });
+  var handled = MERGE_BY_ID_FIELDS.concat(MERGE_STRINGLIST_FIELDS).concat(MERGE_DICT_FIELDS);
   Object.keys(localState).concat(Object.keys(serverState)).forEach(function(k){
     if(handled.indexOf(k)===-1){ merged[k] = (localState[k]!==undefined)? localState[k] : serverState[k]; }
   });
@@ -1186,9 +1279,33 @@ function ensurePageSizeStyleEl(){
   return el;
 }
 function setPageSize(sizeKey){ ensurePageSizeStyleEl().textContent = PAGE_SIZE_CSS[sizeKey] || PAGE_SIZE_CSS.A4; }
+/* ================= Item 18: optional report header/footer fields =================
+   Two independent print types in this file, each with its own headerFooterConfig[key]:
+   "causelist" (the general page / Cause List & Summary print — globalPrintBtn & r_printBtn)
+   and "notice" (the individual case Notice — n_printBtn, rendered inside renderNotice()
+   because notice-mode hides the general masthead/extra-fields div; see the CSS above). */
+var HF_KEY_LABELS = { causelist:"Cause List & Summary", notice:"Notice" };
+function buildPrintExtraFieldsHtml(key){
+  var cfg = (STATE.headerFooterConfig && STATE.headerFooterConfig[key]) || {};
+  var rows = [];
+  if(cfg.dateDiary){
+    rows.push("<div class='hf-row'><span>Date / تاریخ: <bdi>"+esc(todayStr())+"</bdi></span><span>Diary No. / ڈائری نمبر: ______________</span></div>");
+  }
+  if(cfg.address && (STATE.officeAddress || STATE.officeContact)){
+    rows.push("<div class='hf-row'><span>Address / پتہ: <bdi>"+esc(STATE.officeAddress||"—")+"</bdi></span><span>Contact / رابطہ: <bdi>"+esc(STATE.officeContact||"—")+"</bdi></span></div>");
+  }
+  if(cfg.prepared && (STATE.senderName || STATE.senderDesignation)){
+    rows.push("<div class='hf-row'><span>Prepared by / تیار کردہ: <bdi>"+esc(STATE.senderName||"—")+"</bdi></span><span><bdi>"+esc(STATE.senderDesignation||"")+"</bdi></span></div>");
+  }
+  if(cfg.reference){
+    rows.push("<div class='hf-row'><span>Reference No. / حوالہ نمبر: ______________</span></div>");
+  }
+  return rows.join("");
+}
 function printCurrentView(){
   var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
   if(noticeOpen) document.body.classList.add("notice-mode");
+  else document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
   window.print();
 }
 window.addEventListener("afterprint", function(){ document.body.classList.remove("notice-mode"); });
@@ -1196,6 +1313,92 @@ document.getElementById("globalPaperSize").addEventListener("change", function()
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
 setPageSize("A4");
+
+function openHfModal(key){
+  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  var cfg = (STATE.headerFooterConfig && STATE.headerFooterConfig[key]) || {};
+  document.getElementById("hfModalOverlay").dataset.key = key;
+  document.getElementById("hfModalTitle").textContent = "Header/Footer Fields — "+(HF_KEY_LABELS[key]||key);
+  document.getElementById("hfOfficeAddress").value = STATE.officeAddress || "";
+  document.getElementById("hfOfficeContact").value = STATE.officeContact || "";
+  document.getElementById("hfChkDateDiary").checked = !!cfg.dateDiary;
+  document.getElementById("hfChkAddress").checked = !!cfg.address;
+  document.getElementById("hfChkPrepared").checked = !!cfg.prepared;
+  document.getElementById("hfChkReference").checked = !!cfg.reference;
+  /* The Notice already always prints Sender name/designation via .notice-sign-block
+     (see renderNotice()), so a separate "Prepared By" toggle for that print type would be
+     confusing (unchecking it would not actually remove anything) — hide it for that key only. */
+  document.getElementById("hfChkPreparedRow").style.display = (key==="notice")? "none":"flex";
+  document.getElementById("hfModalOverlay").style.display = "flex";
+}
+document.getElementById("hfConfigBtn_causelist").addEventListener("click", function(){ openHfModal("causelist"); });
+document.getElementById("hfConfigBtn_notice").addEventListener("click", function(){ openHfModal("notice"); });
+document.getElementById("hfCancelBtn").addEventListener("click", function(){
+  document.getElementById("hfModalOverlay").style.display = "none";
+});
+document.getElementById("hfSaveBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
+  var key = document.getElementById("hfModalOverlay").dataset.key;
+  STATE.officeAddress = document.getElementById("hfOfficeAddress").value.trim();
+  STATE.officeContact = document.getElementById("hfOfficeContact").value.trim();
+  STATE.headerFooterConfig = STATE.headerFooterConfig || {};
+  STATE.headerFooterConfig[key] = {
+    dateDiary: document.getElementById("hfChkDateDiary").checked,
+    address: document.getElementById("hfChkAddress").checked,
+    prepared: key==="notice"? false : document.getElementById("hfChkPrepared").checked,
+    reference: document.getElementById("hfChkReference").checked
+  };
+  saveData();
+  document.getElementById("hfModalOverlay").style.display = "none";
+  if(key==="notice" && document.getElementById("noticeOverlay").style.display==="flex") renderNotice();
+  toast("Header/Footer settings saved for "+(HF_KEY_LABELS[key]||key)+".");
+});
+
+/* ================= Item 38: which columns of the Case List print =================
+   Same "shown but selectable" idea as Item 37's Notice-field checkboxes, applied to the
+   Case List / Cause List & Summary print (globalPrintBtn & r_printBtn). Each <th>/<td> in the
+   table carries a matching data-col attribute (see the HTML above and renderCases() below);
+   applyCaseListColumnPrintCss() keeps a print-only <style> tag in sync with STATE.caseListColumns
+   so the choice takes effect on every print without touching the on-screen table. The Excel
+   export (r_exportBtn) is untouched by this setting on purpose — see the note in normalizeData(). */
+var CASE_LIST_COLUMN_LABELS = {
+  caseNo:"کیس نمبر / Case No", title:"عنوانِ مقدمہ / Title", vs:"بمقابلہ / Vs", caseType:"کیس کی قسم / Type",
+  firNo:"ایف آئی آر نمبر / FIR No", firDateYear:"ایف آئی آر تاریخ/سال / FIR Date/Year",
+  ps:"تھانہ / Police Station", district:"ضلع / District", tehsil:"تحصیل / Tehsil",
+  bench:"بینچ / Bench", serial:"کاز لسٹ سیریل نمبر / Serial#", fixedDate:"مقررہ تاریخ / Fixed Date"
+};
+function applyCaseListColumnPrintCss(){
+  var el = document.getElementById("caseListColStyle");
+  if(!el){ el = document.createElement("style"); el.id = "caseListColStyle"; document.head.appendChild(el); }
+  var hidden = CASE_LIST_COLUMN_KEYS.filter(function(k){ return STATE.caseListColumns[k]===false; });
+  el.textContent = hidden.length? ("@media print{ "+hidden.map(function(k){ return "[data-col='"+k+"']"; }).join(",")+"{display:none !important;} }") : "";
+}
+function renderColsCheckboxes(){
+  var wrap = document.getElementById("colsCheckboxWrap");
+  wrap.innerHTML = CASE_LIST_COLUMN_KEYS.map(function(k){
+    var checked = STATE.caseListColumns[k] !== false;
+    return "<div class='hf-check-row'><input type='checkbox' id='colChk_"+k+"' data-col-key='"+k+"'"+(checked? " checked":"")+"><label for='colChk_"+k+"'><span class='hf-check-label'>"+esc(CASE_LIST_COLUMN_LABELS[k])+"</span></label></div>";
+  }).join("");
+}
+document.getElementById("colsConfigBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  renderColsCheckboxes();
+  document.getElementById("colsModalOverlay").style.display = "flex";
+});
+document.getElementById("colsCancelBtn").addEventListener("click", function(){
+  document.getElementById("colsModalOverlay").style.display = "none";
+});
+document.getElementById("colsSaveBtn").addEventListener("click", function(){
+  if(!isAdmin()){ toast("Only an Administrator can change print columns."); return; }
+  STATE.caseListColumns = STATE.caseListColumns || {};
+  CASE_LIST_COLUMN_KEYS.forEach(function(k){
+    STATE.caseListColumns[k] = document.getElementById("colChk_"+k).checked;
+  });
+  applyCaseListColumnPrintCss();
+  saveData();
+  document.getElementById("colsModalOverlay").style.display = "none";
+  toast("Print column selection saved.");
+});
 
 /* ---------------- Backup / Restore (disaster recovery) ---------------- */
 document.getElementById("btnBackup").addEventListener("click", function(){
@@ -1274,6 +1477,9 @@ function updateUserBar(){
   roleEl.textContent = CURRENT_USER? (isAdmin()? "Administrator":"Guest") : "";
   roleEl.className = "role-badge"+(isAdmin()? " admin":"");
   document.body.classList.toggle("guest-mode", !isAdmin());
+  document.getElementById("hfConfigBtn_causelist").style.display = isAdmin()? "inline-flex":"none";
+  document.getElementById("hfConfigBtn_notice").style.display = isAdmin()? "inline-flex":"none";
+  document.getElementById("colsConfigBtn").style.display = isAdmin()? "inline-flex":"none";
 }
 function showAppScreen(){
   document.getElementById("authSetupScreen").style.display="none"; document.getElementById("authLoginScreen").style.display="none"; document.getElementById("appMain").style.display="block";
@@ -1697,7 +1903,8 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
     bench: document.getElementById("c_bench").value,
     serial: document.getElementById("c_serial").value,
     fixedDate: document.getElementById("c_fixedDate").value,
-    remarks: document.getElementById("c_remarks").value.trim()
+    remarks: document.getElementById("c_remarks").value.trim(),
+    createdBy: (CURRENT_USER? CURRENT_USER.username : "")
   };
   addToMaster(STATE.policeStationMaster, ps);
   addToMaster(STATE.tehsilMaster, tehsil);
@@ -1706,6 +1913,7 @@ document.getElementById("c_saveBtn").addEventListener("click", function(){
   if(underSection){ addToMaster(STATE.underSectionMaster, underSection); }
   if(caseEditId){
     var idx = STATE.cases.findIndex(function(x){ return x.id===caseEditId; });
+    rec.createdBy = STATE.cases[idx].createdBy;
     STATE.cases[idx] = rec;
     toast("Case updated.");
   } else {
@@ -1790,10 +1998,10 @@ function renderCases(){
     var tr = document.createElement("tr");
     var firDisplay = c.firNo? (c.firNo+(c.firDate? (" / "+c.firDate) : (c.firYear? (" / "+c.firYear) : ""))) : (c.firDate||c.firYear||"");
     tr.innerHTML =
-      "<td>"+esc(c.caseNo)+"</td><td>"+esc(c.title)+"</td><td>"+esc(c.vs)+"</td><td>"+esc(c.caseType)+"</td>"+
-      "<td>"+esc(c.firNo)+"</td><td>"+esc(c.firDate||c.firYear)+"</td>"+
-      "<td>"+esc(c.ps)+"</td><td>"+esc(c.district)+"</td><td>"+esc(c.tehsil)+"</td>"+
-      "<td>"+esc(benchLabel(c.bench))+"</td><td>"+esc(c.serial)+"</td><td>"+esc(c.fixedDate)+"</td>"+
+      "<td data-col='caseNo'>"+esc(c.caseNo)+"</td><td data-col='title'>"+esc(c.title)+"</td><td data-col='vs'>"+esc(c.vs)+"</td><td data-col='caseType'>"+esc(c.caseType)+"</td>"+
+      "<td data-col='firNo'>"+esc(c.firNo)+"</td><td data-col='firDateYear'>"+esc(c.firDate||c.firYear)+"</td>"+
+      "<td data-col='ps'>"+esc(c.ps)+"</td><td data-col='district'>"+esc(c.district)+"</td><td data-col='tehsil'>"+esc(c.tehsil)+"</td>"+
+      "<td data-col='bench'>"+esc(benchLabel(c.bench))+"</td><td data-col='serial'>"+esc(c.serial)+"</td><td data-col='fixedDate'>"+esc(c.fixedDate)+"</td>"+
       "<td class='row-actions'><button class='btn secondary small view-only-btn' data-notice='"+c.id+"'>Notice</button>"+
       "<button class='btn ghost small' data-edit='"+c.id+"'>Edit</button>"+
       (isAdmin()? "<button class='btn danger small' data-del='"+c.id+"'>Delete</button>":"")+"</td>";
@@ -1804,6 +2012,7 @@ function renderCases(){
   body.querySelectorAll("[data-del]").forEach(function(el){ el.addEventListener("click", function(){ deleteCase(el.dataset.del); }); });
   document.getElementById("caseCount").textContent = STATE.cases.length+" case"+(STATE.cases.length===1?"":"s");
   renderReportSummary(list);
+  applyCaseListColumnPrintCss();
 }
 
 /* ---------------- report summary / export / print ---------------- */
@@ -1822,7 +2031,10 @@ function renderReportSummary(list){
   document.getElementById("reportBenchTotals").innerHTML = "<td><b>Total</b></td><td class='num'><b>"+list.length+"</b></td>";
 }
 
-document.getElementById("r_printBtn").addEventListener("click", function(){ window.print(); });
+document.getElementById("r_printBtn").addEventListener("click", function(){
+  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
+  window.print();
+});
 
 document.getElementById("r_exportBtn").addEventListener("click", function(){
   if(typeof XLSX === "undefined"){ toast("Could not load the Excel export library — check your internet connection and try again."); return; }
@@ -1947,8 +2159,11 @@ function renderNotice(){
     return "<div><span class='label'>"+f.label(t)+": </span>"+esc(f.value(c))+"</div>";
   }).join("");
 
+  var extraFieldsHtml = buildPrintExtraFieldsHtml("notice");
+
   var html =
     "<div class='notice-header'><h2>"+esc(t.title)+"</h2><div class='sub'>"+esc(office)+"</div></div>"+
+    (extraFieldsHtml? "<div class='pb-print-extra-fields'>"+extraFieldsHtml+"</div>" : "")+
     "<div class='notice-meta'>"+metaHtml+"</div>"+
     "<div class='notice-body'>"+esc(t.body(c, office)).replace(/\n/g,"<br>")+"</div>"+
     "<div class='notice-sign-block'>"+
@@ -1963,7 +2178,7 @@ function renderNotice(){
 }
 document.getElementById("n_lang").addEventListener("change", function(){ renderNoticeFieldCheckboxes(); renderNotice(); });
 document.getElementById("n_paperSize").addEventListener("change", function(){ setPageSize(this.value); });
-document.getElementById("n_printBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); printCurrentView(); });
+document.getElementById("n_printBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); renderNotice(); printCurrentView(); });
 document.getElementById("n_closeBtn").addEventListener("click", closeNotice);
 
 /* ---------------- init ---------------- */
