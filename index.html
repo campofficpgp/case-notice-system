@@ -166,7 +166,8 @@
   }
   .stamp::before{content:"";position:absolute;inset:6px;border:1px dashed #7a1010;border-radius:50%;}
   @media print{
-    nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,.auth-screen,footer{display:none !important;}
+    nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,.auth-screen,footer,
+    .panel-head p,.appfoot-copyright{display:none !important;}
     body{background:#fff;}
     body:not(.notice-mode) .notice-overlay{display:none !important;}
     body.notice-mode > #appMain, body.notice-mode > .toast{display:none !important;}
@@ -266,7 +267,11 @@
 
 /* ===== Prepared-by print sign-off + Punjab Govt masthead ===== */
 .pb-modal-overlay{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
-.pb-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:400px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.pb-modal{background:#fff;border-radius:10px;padding:22px 24px;max-width:560px;width:92%;box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.pb-stamp-cols{display:flex;gap:16px;flex-wrap:wrap;}
+.pb-stamp-col{flex:1;min-width:200px;}
+.pb-stamp-col h4{margin:0 0 8px;font-size:12.5px;color:#153A5B;border-bottom:1px solid #eee;padding-bottom:4px;}
+.pb-modal textarea{width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px;box-sizing:border-box;font-family:inherit;resize:vertical;}
 .pb-modal h3{margin:0 0 4px;font-size:16px;color:#153A5B;}
 .pb-modal .pb-sub{font-size:12px;color:#666;margin-bottom:14px;line-height:1.7;}
 .pb-modal .field{margin-bottom:12px;}
@@ -294,7 +299,7 @@
   .pb-print-masthead .pb-mh-text{line-height:1.5;}
   .pb-print-masthead .pb-mh-t1{font-weight:700;font-size:15px;color:#153A5B;}
   .pb-print-masthead .pb-mh-t2{font-size:11px;color:#444;}
-  .pb-print-signfoot{display:block !important;margin-top:24px;padding-top:8px;border-top:1px solid #999;font-size:12px;color:#222;}
+  .pb-print-signfoot{display:block !important;margin-top:14px;padding-top:6px;border-top:1px solid #999;font-size:11.5px;color:#222;page-break-inside:avoid;break-inside:avoid;}
   .pb-print-extra-fields{display:block !important;font-size:11.5px;color:#222;margin-bottom:12px;line-height:1.7;border-bottom:1px dashed #999;padding-bottom:8px;}
   .pb-print-extra-fields .hf-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 20px;}
   .notice-paper .pb-print-extra-fields{border-bottom:1px dashed #999;margin-bottom:16px;}
@@ -668,21 +673,21 @@
 
 <div class="pb-modal-overlay" id="pbModalOverlay">
   <div class="pb-modal">
-    <h3>پرنٹ سے پہلے / Before Printing</h3>
-    <div class="pb-sub">براہ کرم اپنا نام اور عہدہ درج کریں — یہ اس پرنٹ پر بطور دستخط شامل ہو گا۔<br>Please enter your name and designation — this will appear as the signature on this print.</div>
-    <div class="field"><label>نام / Name</label><input type="text" id="pbName" placeholder="e.g. Iftikhar Ahmed"></div>
-    <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbDesig" placeholder="e.g. Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></div>
-    <div class="field pb-sig-field">
-      <label>ڈیجیٹل دستخط (اختیاری) / Digital Signature (optional)</label>
-      <div class="pb-sig-row">
-        <div class="pb-sig-preview-wrap" id="pbSigPreviewWrap" style="display:none;">
-          <img id="pbSigPreview" alt="signature">
-          <button type="button" id="pbSigRemoveBtn" title="Remove signature">✕</button>
-        </div>
-        <input type="file" id="pbSigFile" accept="image/*">
+    <h3>پرنٹ سائن آف / Print Sign-off</h3>
+    <div class="pb-sub">دستاویز پرنٹ ہونے سے پہلے دونوں طرف کی تفصیلات چیک/ترمیم کر لیں۔<br>Check or edit both sides' details before printing.</div>
+    <div class="pb-stamp-cols">
+      <div class="pb-stamp-col">
+        <h4>Prepared by / تیار کردہ</h4>
+        <div class="field"><label>نام / Name</label><input type="text" id="pbLeftName" placeholder="e.g. Iftikhar Ahmed"></div>
+        <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbLeftDesig" placeholder="e.g. Junior Clerk"></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbLeftAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
       </div>
-      <div class="pb-sig-hint">اپنے دستخط کی تصویر اپلوڈ کریں — یہ آپ کے پروفائل میں محفوظ ہو کر ہر سسٹم میں کام آئے گی۔<br>Upload an image of your signature — it's saved to your profile and reused across every system.</div>
-      <div class="pb-sig-progress" id="pbSigProgress" style="display:none;"></div>
+      <div class="pb-stamp-col">
+        <h4>Approved by / منظور کردہ</h4>
+        <div class="field"><label>نام / Name</label><input type="text" id="pbRightName" placeholder="(optional)"></div>
+        <div class="field"><label>عہدہ / Designation</label><input type="text" id="pbRightDesig" placeholder="(optional)"></div>
+        <div class="field"><label>دفتر کا پتہ / Office Address</label><textarea id="pbRightAddress" rows="2" placeholder="Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"></textarea></div>
+      </div>
     </div>
     <div class="pb-actions">
       <button type="button" class="pb-cancel" id="pbCancelBtn">Cancel</button>
@@ -2442,108 +2447,82 @@ window.__campOfficeBridge = {
 
 })();
 
-/* ===== Prepared-by print sign-off (asks every time before printing) ===== */
+/* ===== Prepared-by / Approved-by print sign-off stamp (two-sided, editable in place right
+   before every print — replaces the old single-sided popup + digital-signature-upload flow) ===== */
 (function(){
-  var LS_KEY = "campoffice_preparedBy_v1";
-  var CLOUDINARY_CLOUD_NAME = "rjsudteo";
-  var CLOUDINARY_UPLOAD_PRESET = "t8euf8jm";
-  function loadSaved(){
-    try{ var raw = localStorage.getItem(LS_KEY); if(raw){ var v = JSON.parse(raw); if(v && (v.name || v.designation)) return v; } }catch(e){}
-    return {name:"Iftikhar Ahmed", designation:"Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad"};
+  var LS_KEY = "campoffice_preparedApproved_v1";
+  function defaultLeft(){
+    return {
+      name: "Iftikhar Ahmed",
+      designation: "Junior Clerk, Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad",
+      address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad"
+    };
   }
-  function saveLast(name,desig){ try{ localStorage.setItem(LS_KEY, JSON.stringify({name:name,designation:desig})); }catch(e){} }
+  function defaultRight(){
+    return { name: "", designation: "", address: "Camp Office Prosecutor General Punjab\nSupreme Court Of Pakistan\nIslamabad" };
+  }
+  function loadSaved(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(raw){ var v = JSON.parse(raw); if(v && v.left && v.right) return v; }
+    }catch(e){}
+    return {left: defaultLeft(), right: defaultRight()};
+  }
+  function saveLast(v){ try{ localStorage.setItem(LS_KEY, JSON.stringify(v)); }catch(e){} }
   function escHtmlLocal(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
   var overlay = document.getElementById("pbModalOverlay");
-  var nameInput = document.getElementById("pbName");
-  var desigInput = document.getElementById("pbDesig");
+  var leftNameInput = document.getElementById("pbLeftName");
+  var leftDesigInput = document.getElementById("pbLeftDesig");
+  var leftAddressInput = document.getElementById("pbLeftAddress");
+  var rightNameInput = document.getElementById("pbRightName");
+  var rightDesigInput = document.getElementById("pbRightDesig");
+  var rightAddressInput = document.getElementById("pbRightAddress");
   var confirmBtn = document.getElementById("pbConfirmBtn");
   var cancelBtn = document.getElementById("pbCancelBtn");
   var footEl = document.getElementById("pbPrintSignfoot");
-  var sigFile = document.getElementById("pbSigFile");
-  var sigPreviewWrap = document.getElementById("pbSigPreviewWrap");
-  var sigPreview = document.getElementById("pbSigPreview");
-  var sigRemoveBtn = document.getElementById("pbSigRemoveBtn");
-  var sigProgress = document.getElementById("pbSigProgress");
-  if(!overlay || !nameInput || typeof window.print !== "function") return;
+  if(!overlay || !leftNameInput || typeof window.print !== "function") return;
   var _nativePrint = window.print.bind(window);
 
-  /* ---- digital signature (optional; stored on the user's account, reused across every camp-office system) ---- */
-  var bridge = window.__campOfficeBridge || {};
-  function currentSigUrl(){ var u = bridge.CURRENT_USER; return (u && u.signatureURL) || ""; }
-  function showSigPreview(url){
-    if(url && sigPreview && sigPreviewWrap){ sigPreview.src = url; sigPreviewWrap.style.display = "inline-flex"; }
-    else if(sigPreviewWrap){ sigPreviewWrap.style.display = "none"; if(sigPreview) sigPreview.src = ""; }
-  }
-  function saveSignatureUrl(url){
-    var u = bridge.CURRENT_USER;
-    if(u){ u.signatureURL = url; }
-    if(bridge.db && u && u.uid){
-      bridge.db.collection("users").doc(u.uid).set({signatureURL:url}, {merge:true}).catch(function(err){ if(bridge.toast) bridge.toast("Signature could not be saved: "+err.message); });
-    }
-  }
-  if(sigFile){
-    sigFile.addEventListener("change", function(){
-      var f = sigFile.files && sigFile.files[0];
-      if(!f) return;
-      if(!/^image\//.test(f.type)){ if(bridge.toast) bridge.toast("Please choose an image file."); sigFile.value = ""; return; }
-      if(f.size > 2*1024*1024){ if(bridge.toast) bridge.toast("Signature image should be under 2MB."); sigFile.value = ""; return; }
-      var fd = new FormData();
-      fd.append("file", f);
-      fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", "https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload");
-      if(sigProgress){ sigProgress.style.display = "block"; sigProgress.textContent = "اپلوڈ ہو رہا ہے... / Uploading… 0%"; }
-      xhr.upload.onprogress = function(ev){
-        if(ev.lengthComputable && sigProgress){ sigProgress.textContent = "اپلوڈ ہو رہا ہے... / Uploading… "+Math.round(ev.loaded/ev.total*100)+"%"; }
-      };
-      xhr.onload = function(){
-        if(sigProgress) sigProgress.style.display = "none";
-        sigFile.value = "";
-        try{
-          var res = JSON.parse(xhr.responseText);
-          if(res && res.secure_url){
-            showSigPreview(res.secure_url);
-            saveSignatureUrl(res.secure_url);
-            if(bridge.toast) bridge.toast("Signature saved.");
-          } else if(bridge.toast) bridge.toast("Signature upload failed.");
-        }catch(e){ if(bridge.toast) bridge.toast("Signature upload failed."); }
-      };
-      xhr.onerror = function(){ if(sigProgress) sigProgress.style.display = "none"; if(bridge.toast) bridge.toast("Signature upload failed — check your internet connection."); };
-      xhr.send(fd);
-    });
-  }
-  if(sigRemoveBtn){
-    sigRemoveBtn.addEventListener("click", function(){
-      showSigPreview("");
-      saveSignatureUrl("");
-    });
+  function stampSideHtml(label, side, isRight){
+    var lines = [side.name, side.designation, side.address].filter(function(v){ return v && v.trim(); });
+    var bodyHtml = lines.length
+      ? lines.map(function(l){ return "<div>"+escHtmlLocal(l).replace(/\n/g,"<br>")+"</div>"; }).join("")
+      : "<div style='min-height:26px;'>&nbsp;</div>"; /* blank space left for a hand signature */
+    return "<div class='pb-stamp-side"+(isRight?" right":"")+"' style='flex:1;min-width:0;"+(isRight?"text-align:right;":"")+"'>"+
+      "<div style='font-weight:700;margin-bottom:3px;'>"+escHtmlLocal(label)+"</div>"+bodyHtml+"</div>";
   }
 
   function doPrint(){
-    var name = nameInput.value.trim();
-    var desig = desigInput.value.trim();
-    var sigUrl = currentSigUrl();
-    saveLast(name, desig);
+    var stamp = {
+      left: {name: leftNameInput.value.trim(), designation: leftDesigInput.value.trim(), address: leftAddressInput.value.trim()},
+      right: {name: rightNameInput.value.trim(), designation: rightDesigInput.value.trim(), address: rightAddressInput.value.trim()}
+    };
+    saveLast(stamp);
     if(footEl){
       var cgdNote = "<div style=\"margin-top:4px;font-size:10.5px;color:#666;\">This is a computer generated document. / یہ ایک کمپیوٹر سے تیار کردہ دستاویز ہے۔</div>";
-      var sigImgHtml = sigUrl ? ("<img src=\""+sigUrl+"\" class=\"pb-print-sig-img\" alt=\"signature\">") : "";
-      footEl.innerHTML = sigImgHtml + ((name||desig) ? ("Prepared by: <b>"+escHtmlLocal(name)+"</b>"+(desig? (", "+escHtmlLocal(desig)) : "")) : "") + cgdNote;
+      footEl.innerHTML = "<div style='display:flex;justify-content:space-between;gap:16px;'>"+
+        stampSideHtml("Prepared by / تیار کردہ", stamp.left, false)+
+        stampSideHtml("Approved by / منظور کردہ", stamp.right, true)+
+        "</div>"+cgdNote;
     }
     overlay.style.display = "none";
     _nativePrint();
   }
   window.print = function(){
     var saved = loadSaved();
-    nameInput.value = saved.name || "";
-    desigInput.value = saved.designation || "";
-    showSigPreview(currentSigUrl());
+    leftNameInput.value = saved.left.name || "";
+    leftDesigInput.value = saved.left.designation || "";
+    leftAddressInput.value = saved.left.address || "";
+    rightNameInput.value = saved.right.name || "";
+    rightDesigInput.value = saved.right.designation || "";
+    rightAddressInput.value = saved.right.address || "";
     overlay.style.display = "flex";
-    setTimeout(function(){ nameInput.focus(); nameInput.select(); }, 30);
+    setTimeout(function(){ leftNameInput.focus(); leftNameInput.select(); }, 30);
   };
   confirmBtn.addEventListener("click", doPrint);
   cancelBtn.addEventListener("click", function(){ overlay.style.display = "none"; });
   overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.style.display = "none"; });
-  [nameInput, desigInput].forEach(function(inp){
+  [leftNameInput, leftDesigInput, rightNameInput, rightDesigInput].forEach(function(inp){
     inp.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); doPrint(); } });
   });
 })();
