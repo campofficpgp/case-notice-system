@@ -236,10 +236,31 @@
   .chat-msg.mine .chat-msg-bubble{background:var(--navy-tint);border-color:#C9DCEA;}
   .chat-msg.mine .chat-msg-meta{text-align:right;}
   .chat-empty{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px;}
-  .chat-input-bar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff;flex:0 0 auto;}
+  .chat-input-bar{display:flex;flex-direction:column;padding:6px 10px 10px;border-top:1px solid var(--border);background:#fff;flex:0 0 auto;position:relative;}
   .chat-input-bar textarea{flex:1;resize:none;height:40px;padding:8px 10px;font-size:13px;font-family:inherit;}
   .chat-input-bar button{border:none;background:var(--navy);color:#fff;border-radius:var(--radius);padding:0 14px;cursor:pointer;font-weight:600;font-family:inherit;}
   .chat-input-bar button:hover{background:var(--navy-dark);}
+  .chat-toolbar-row{display:flex;gap:2px;align-items:center;}
+  .chat-main-row{display:flex;gap:8px;align-items:center;margin-top:4px;}
+  .chat-icon-btn{border:none;background:transparent;font-size:19px;cursor:pointer;padding:0 2px;line-height:1;flex:0 0 auto;}
+  .chat-icon-btn:hover{opacity:.65;}
+  .chat-emoji-picker{position:absolute;left:10px;bottom:92px;display:none;grid-template-columns:repeat(8,1fr);gap:4px;
+    background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;
+    max-width:280px;z-index:20;}
+  .chat-emoji-picker.open{display:grid;}
+  .chat-emoji-picker span{cursor:pointer;font-size:18px;text-align:center;border-radius:6px;padding:2px;}
+  .chat-emoji-picker span:hover{background:var(--bg);}
+  .chat-upload-progress{padding:6px 14px;font-size:11.5px;color:var(--muted);background:var(--bg);border-top:1px solid var(--border);flex:0 0 auto;}
+  .chat-msg-file{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);
+    border-radius:8px;padding:6px 10px;text-decoration:none;color:var(--text);font-size:12.5px;max-width:100%;word-break:break-all;}
+  .chat-msg-file:hover{background:#fff;}
+  .chat-msg-image{max-width:200px;max-height:200px;border-radius:8px;display:block;cursor:pointer;object-fit:cover;}
+  .chat-msg-del{border:none;background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;padding:2px 0 0;
+    font-family:inherit;text-decoration:underline;}
+  .chat-msg-del:hover{color:var(--danger);}
+  .chat-mic-status{display:none;padding:6px 10px;border-top:1px solid var(--border);background:#fff5f5;font-size:12px;color:#b00020;align-items:center;gap:8px;flex:0 0 auto;}
+  .chat-mic-status.active{display:flex;}
+  .chat-mic-status button{border:none;background:#eee;color:#333;border-radius:6px;padding:2px 8px;cursor:pointer;font-family:inherit;}
   @media(max-width:640px){ #chatPanel{width:100%;right:-100%;} }
   @media print{ #chatToggleBtn, #chatPanel, .help-shell{display:none !important;} }
 
@@ -305,7 +326,6 @@
   </div>
 </div>
 <div class="pb-print-extra-fields" id="pbPrintExtraFields"></div>
-
 
 <!-- ================= AUTH ================= -->
 <div class="fullscreen-overlay auth-screen" id="authSetupScreen" style="display:none;">
@@ -522,9 +542,24 @@
     <button id="chatCloseBtn">✕</button>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-upload-progress" id="chatUploadProgress" style="display:none;"></div>
+  <div class="chat-mic-status" id="chatMicStatus">
+    <span>🔴</span><span id="chatMicTimer">0:00</span>
+    <span data-i18n="chat_recording" style="flex:1;">Recording — click 🎤 again to send, or ✕ to cancel</span>
+    <button type="button" id="chatMicCancelBtn" title="Cancel">✕</button>
+  </div>
   <div class="chat-input-bar">
-    <textarea id="chatInput" data-i18n-placeholder="chat_typeMessage" placeholder="Type a message…"></textarea>
-    <button id="chatSendBtn" data-i18n="chat_send">Send</button>
+    <div class="chat-toolbar-row">
+      <input type="file" id="chatFileInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="display:none;">
+      <button type="button" id="chatAttachBtn" class="chat-icon-btn" title="Attach file">📎</button>
+      <button type="button" id="chatEmojiBtn" class="chat-icon-btn" title="Emoji">😊</button>
+      <button type="button" id="chatMicBtn" class="chat-icon-btn" title="Record a voice message / صوتی پیغام ریکارڈ کریں">🎤</button>
+      <div class="chat-emoji-picker" id="chatEmojiPicker"></div>
+    </div>
+    <div class="chat-main-row">
+      <textarea id="chatInput" data-i18n-placeholder="chat_typeMessage" placeholder="Type a message…"></textarea>
+      <button id="chatSendBtn" data-i18n="chat_send">Send</button>
+    </div>
   </div>
 </div>
 </div>
@@ -860,6 +895,10 @@ en: {
   chat_title:"Team Chat", chat_typeMessage:"Type a message…", chat_send:"Send",
   chat_onlineCount:"{n} online", chat_noMessages:"No messages yet — say hello!",
   chat_you:"You", chat_guest:"Guest",
+  chat_delete:"Delete", chat_attach:"Attach file", chat_emoji:"Emoji",
+  chat_fileTooBig:"File should be under 10MB.", chat_uploadFailed:"File upload failed.",
+  chat_uploading:"Uploading… {p}%",
+  chat_recording:"Recording — click 🎤 again to send, or ✕ to cancel",
   opt_selectDistrict:"Select district…", opt_selectBench:"Select bench…", opt_selectSerial:"Select serial…",
   opt_selectPoliceStation:"Select police station…", opt_selectTehsil:"Select tehsil…", opt_selectDistrictFirst:"Select district first…", opt_selectVsNo:"Select Vs No…", opt_selectCaseNoPrefix:"Select prefix (or leave blank)…", opt_selectUnderSection:"Select U/S (or leave blank)…", opt_addNewValue:"+ Add a new value…",
   ph_newCaseType:"Type the new case type (e.g. Notice)", ph_newCaseNoPrefix:"Type the new prefix (e.g. C.A.-)", ph_newUnderSection:"Type the sections (e.g. 7ATA,341,188,186,506,353,109,148,149 PPC)",
@@ -943,6 +982,10 @@ ur: {
   chat_title:"ٹیم چیٹ", chat_typeMessage:"پیغام لکھیں…", chat_send:"بھیجیں",
   chat_onlineCount:"{n} آن لائن", chat_noMessages:"ابھی تک کوئی پیغام نہیں — سلام کہیں!",
   chat_you:"آپ", chat_guest:"مہمان",
+  chat_delete:"حذف کریں", chat_attach:"فائل منسلک کریں", chat_emoji:"ایموجی",
+  chat_fileTooBig:"فائل 10MB سے کم ہونی چاہیے۔", chat_uploadFailed:"فائل اپلوڈ ناکام ہو گئی۔",
+  chat_uploading:"اپلوڈ ہو رہا ہے… {p}%",
+  chat_recording:"ریکارڈنگ ہو رہی ہے — بھیجنے کے لیے 🎤 دوبارہ دبائیں، یا منسوخ کرنے کے لیے ✕",
   opt_selectDistrict:"ضلع منتخب کریں…", opt_selectBench:"بینچ منتخب کریں…", opt_selectSerial:"سیریل منتخب کریں…",
   opt_selectPoliceStation:"پولیس اسٹیشن منتخب کریں…", opt_selectTehsil:"تحصیل منتخب کریں…", opt_selectDistrictFirst:"پہلے ضلع منتخب کریں…", opt_selectVsNo:"بمقابلہ نمبر منتخب کریں…", opt_selectCaseNoPrefix:"سابقہ (prefix) منتخب کریں (یا خالی چھوڑیں)…", opt_selectUnderSection:"دفعات (U/S) منتخب کریں (یا خالی چھوڑیں)…", opt_addNewValue:"+ نئی ویلیو شامل کریں…",
   ph_newCaseType:"نئی کیس کی قسم لکھیں (مثلاً Notice)", ph_newCaseNoPrefix:"نیا سابقہ لکھیں (مثلاً C.A.-)", ph_newUnderSection:"دفعات لکھیں (مثلاً 7ATA,341,188,186,506,353,109,148,149 PPC)",
@@ -1465,6 +1508,8 @@ document.getElementById("themeSwitcher").addEventListener("change", function(){
 
 /* ================= AUTH ================= */
 var CURRENT_USER = null;
+var CLOUDINARY_CLOUD_NAME = "rjsudteo";
+var CLOUDINARY_UPLOAD_PRESET = "t8euf8jm";
 function isAdmin(){ return !!(CURRENT_USER && CURRENT_USER.role==="admin"); }
 function showSetupScreen(){ document.getElementById("authSetupScreen").style.display="flex"; document.getElementById("authLoginScreen").style.display="none"; document.getElementById("appMain").style.display="none"; }
 function showLoginScreen(){
@@ -1578,7 +1623,7 @@ function startChat(){
   chatUnsubMessages = db.collection("chatMessages").orderBy("timestamp","desc").limit(150)
     .onSnapshot(function(snap){
       var list = [];
-      snap.forEach(function(doc){ list.push(doc.data()); });
+      snap.forEach(function(doc){ var d = doc.data(); d.id = doc.id; list.push(d); });
       list.reverse();
       CHAT_MESSAGES = list;
       if(!chatFirstSnapshot){
@@ -1664,10 +1709,25 @@ function renderChatMessages(){
     var mine = CURRENT_USER && msg.senderUid===CURRENT_USER.uid;
     var name = mine? (I18N_UI[lang].chat_you||"You") : chatDisplayName(msg);
     var time = fmtChatTime(tsToMillis(msg.timestamp));
+    var canDelete = !!(msg.id && (mine || isAdmin()));
+    var bodyHtml = "";
+    if(msg.fileURL){
+      if(msg.fileType==="image"){
+        bodyHtml += "<img class='chat-msg-image' src='"+escChat(msg.fileURL)+"' alt='"+escChat(msg.fileName||"image")+"' onclick=\"window.open('"+escChat(msg.fileURL)+"','_blank')\">";
+      } else if(msg.fileType==="audio"){
+        bodyHtml += "<audio controls src='"+escChat(msg.fileURL)+"' style='max-width:220px;height:34px;display:block;'></audio>";
+      } else {
+        bodyHtml += "<a class='chat-msg-file' href='"+escChat(msg.fileURL)+"' target='_blank' rel='noopener'>📄 "+escChat(msg.fileName||"file")+"</a>";
+      }
+      if(msg.text) bodyHtml += "<div class='chat-msg-bubble' style='margin-top:4px;'>"+escChat(msg.text)+"</div>";
+    } else {
+      bodyHtml = "<div class='chat-msg-bubble'>"+escChat(msg.text)+"</div>";
+    }
+    var delHtml = canDelete ? "<button type='button' class='chat-msg-del' data-id='"+escChat(msg.id)+"'>"+escChat(t("chat_delete"))+"</button>" : "";
     var div = document.createElement("div");
     div.className = "chat-msg"+(mine?" mine":"");
     div.innerHTML = "<div class='chat-msg-meta'>"+escChat(name)+(time? " · "+escChat(time):"")+"</div>"+
-      "<div class='chat-msg-bubble'>"+escChat(msg.text)+"</div>";
+      bodyHtml + delHtml;
     body.appendChild(div);
   });
   if(wasNearBottom) body.scrollTop = body.scrollHeight;
@@ -1678,20 +1738,31 @@ function updateChatBadge(){
   if(chatUnreadCount>0){ badge.style.display="flex"; badge.textContent = chatUnreadCount>99? "99+":chatUnreadCount; }
   else { badge.style.display="none"; }
 }
+function postChatMessage(extra){
+  if(!CURRENT_USER) return Promise.reject(new Error("not signed in"));
+  var payload = {
+    senderUid: CURRENT_USER.uid,
+    senderEmail: CURRENT_USER.username,
+    senderName: CURRENT_USER.username? CURRENT_USER.username.split("@")[0] : "",
+    senderRole: isAdmin()? "admin":"guest",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  Object.keys(extra||{}).forEach(function(k){ payload[k] = extra[k]; });
+  return db.collection("chatMessages").add(payload);
+}
+function deleteChatMessage(id){
+  if(!id) return;
+  db.collection("chatMessages").doc(id).delete().catch(function(err){
+    toast("Could not delete message: "+err.message);
+  });
+}
 function sendChatMessage(){
   if(!CURRENT_USER) return;
   var input = document.getElementById("chatInput");
   var text = input.value.trim();
   if(!text) return;
   input.value = "";
-  db.collection("chatMessages").add({
-    text: text,
-    senderUid: CURRENT_USER.uid,
-    senderEmail: CURRENT_USER.username,
-    senderName: CURRENT_USER.username? CURRENT_USER.username.split("@")[0] : "",
-    senderRole: isAdmin()? "admin":"guest",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  }).catch(function(err){
+  postChatMessage({text:text}).catch(function(err){
     toast("Could not send message: "+err.message);
     input.value = text; /* give it back so nothing is lost */
   });
@@ -1699,6 +1770,177 @@ function sendChatMessage(){
 document.getElementById("chatSendBtn").addEventListener("click", sendChatMessage);
 document.getElementById("chatInput").addEventListener("keydown", function(ev){
   if(ev.key==="Enter" && !ev.shiftKey){ ev.preventDefault(); sendChatMessage(); }
+});
+document.getElementById("chatMessages").addEventListener("click", function(ev){
+  if(ev.target.classList && ev.target.classList.contains("chat-msg-del")){
+    deleteChatMessage(ev.target.getAttribute("data-id"));
+  }
+});
+(function(){
+  var attachBtn = document.getElementById("chatAttachBtn");
+  var fileInput = document.getElementById("chatFileInput");
+  var progressEl = document.getElementById("chatUploadProgress");
+  if(attachBtn && fileInput){
+    attachBtn.addEventListener("click", function(){ fileInput.click(); });
+    fileInput.addEventListener("change", function(){
+      var f = fileInput.files && fileInput.files[0];
+      fileInput.value = "";
+      if(!f) return;
+      if(f.size > 10*1024*1024){ toast(t("chat_fileTooBig")); return; }
+      var isImage = /^image\//.test(f.type);
+      var fd = new FormData();
+      fd.append("file", f);
+      fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      var endpoint = "https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/"+(isImage? "image":"auto")+"/upload";
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", endpoint);
+      if(progressEl){ progressEl.style.display = "block"; progressEl.textContent = t("chat_uploading").replace("{p}","0"); }
+      xhr.upload.onprogress = function(ev){
+        if(ev.lengthComputable && progressEl){ progressEl.textContent = t("chat_uploading").replace("{p}", Math.round(ev.loaded/ev.total*100)); }
+      };
+      xhr.onload = function(){
+        if(progressEl) progressEl.style.display = "none";
+        try{
+          var res = JSON.parse(xhr.responseText);
+          if(res && res.secure_url){
+            postChatMessage({fileURL:res.secure_url, fileName:f.name, fileType: isImage? "image":"file"}).catch(function(err){
+              toast("Could not send file: "+err.message);
+            });
+          } else { toast(t("chat_uploadFailed")); }
+        }catch(e){ toast(t("chat_uploadFailed")); }
+      };
+      xhr.onerror = function(){ if(progressEl) progressEl.style.display = "none"; toast(t("chat_uploadFailed")); };
+      xhr.send(fd);
+    });
+  }
+  var CHAT_EMOJIS = ["😀","😂","😊","😍","👍","👏","🙏","🎉","❤️","😢","😮","😡","🤔","👌","🔥","✅","❌","📌","📅","⏰","💬","☕","🙌","😴"];
+  var emojiBtn = document.getElementById("chatEmojiBtn");
+  var emojiPicker = document.getElementById("chatEmojiPicker");
+  if(emojiBtn && emojiPicker){
+    emojiPicker.innerHTML = CHAT_EMOJIS.map(function(e){ return "<span>"+e+"</span>"; }).join("");
+    emojiBtn.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      emojiPicker.classList.toggle("open");
+    });
+    emojiPicker.addEventListener("click", function(ev){
+      if(ev.target.tagName==="SPAN"){
+        var input = document.getElementById("chatInput");
+        input.value += ev.target.textContent;
+        input.focus();
+        emojiPicker.classList.remove("open");
+      }
+    });
+    document.addEventListener("click", function(ev){
+      if(emojiPicker.classList.contains("open") && ev.target!==emojiBtn && !emojiPicker.contains(ev.target)){
+        emojiPicker.classList.remove("open");
+      }
+    });
+  }
+})();
+/* ---------------- Voice messages (record with the mic, upload to Cloudinary as an
+   audio file, send as a chat message — recorded voice notes, not a live call). ---------------- */
+var micRecorder = null;
+var micStream = null;
+var micRecording = false;
+var micCancelRequested = false;
+var micStartTime = 0;
+var micTimerInterval = null;
+function micSupported(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+}
+function formatMicTime(ms){
+  var s = Math.max(0, Math.floor(ms/1000));
+  var m = Math.floor(s/60);
+  s = s % 60;
+  return m + ":" + (s<10? "0"+s : s);
+}
+function micUpdateTimer(){
+  var el = document.getElementById("chatMicTimer");
+  if(el) el.textContent = formatMicTime(Date.now() - micStartTime);
+  if(Date.now() - micStartTime > 120000){ stopMicRecording(false); } /* 2-minute safety cap, then auto-send */
+}
+function uploadVoiceMessage(blob, durationMs){
+  var fd = new FormData();
+  fd.append("file", blob, "voice_" + Date.now() + ".webm");
+  fd.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  var xhr = new XMLHttpRequest();
+  /* Cloudinary handles audio files through its "video" resource type endpoint —
+     this is the standard Cloudinary pattern for any non-image upload (audio/video). */
+  xhr.open("POST", "https://api.cloudinary.com/v1_1/" + CLOUDINARY_CLOUD_NAME + "/video/upload");
+  toast("Uploading voice message…");
+  xhr.onload = function(){
+    try{
+      var res = JSON.parse(xhr.responseText);
+      if(res && res.secure_url){
+        postChatMessage({fileURL: res.secure_url, fileType:"audio", audioDurationMs: durationMs}).catch(function(err){
+          toast("Could not send voice message: " + err.message);
+        });
+      } else {
+        toast("Voice message upload failed. (If this keeps happening, check that the Cloudinary upload preset allows audio/video files.)");
+      }
+    }catch(e){ toast("Voice message upload failed."); }
+  };
+  xhr.onerror = function(){ toast("Voice message upload failed — check your internet connection."); };
+  xhr.send(fd);
+}
+function startMicRecording(){
+  if(!CURRENT_USER) return;
+  if(!micSupported()){ toast("Voice messages are not supported in this browser."); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ toast("Voice messages need a secure (https) connection or a supported browser."); return; }
+  micCancelRequested = false;
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    micStream = stream;
+    var chunks = [];
+    var recorder;
+    try{
+      recorder = new MediaRecorder(stream);
+    }catch(e){
+      toast("Could not start recording: " + e.message);
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      return;
+    }
+    micRecorder = recorder;
+    var recordedStartTime = Date.now();
+    recorder.ondataavailable = function(ev){ if(ev.data && ev.data.size > 0) chunks.push(ev.data); };
+    recorder.onstop = function(){
+      micStream.getTracks().forEach(function(t){ t.stop(); });
+      micStream = null;
+      var durationMs = Date.now() - recordedStartTime;
+      if(micCancelRequested || chunks.length === 0) return;
+      var blob = new Blob(chunks, {type: recorder.mimeType || "audio/webm"});
+      if(blob.size > 0) uploadVoiceMessage(blob, durationMs);
+    };
+    recorder.start();
+    micRecording = true;
+    micStartTime = recordedStartTime;
+    var statusEl = document.getElementById("chatMicStatus");
+    if(statusEl) statusEl.classList.add("active");
+    var micBtn = document.getElementById("chatMicBtn");
+    if(micBtn) micBtn.textContent = "⏹";
+    if(micTimerInterval) clearInterval(micTimerInterval);
+    micTimerInterval = setInterval(micUpdateTimer, 500);
+    micUpdateTimer();
+  }).catch(function(err){
+    toast("Microphone access was not granted: " + err.message);
+  });
+}
+function stopMicRecording(cancel){
+  if(!micRecorder || !micRecording) return;
+  micCancelRequested = !!cancel;
+  micRecording = false;
+  if(micTimerInterval){ clearInterval(micTimerInterval); micTimerInterval = null; }
+  var statusEl = document.getElementById("chatMicStatus");
+  if(statusEl) statusEl.classList.remove("active");
+  var micBtn = document.getElementById("chatMicBtn");
+  if(micBtn) micBtn.textContent = "🎤";
+  try{ micRecorder.stop(); }catch(e){}
+}
+document.getElementById("chatMicBtn").addEventListener("click", function(){
+  if(micRecording){ stopMicRecording(false); }
+  else { startMicRecording(); }
+});
+document.getElementById("chatMicCancelBtn").addEventListener("click", function(){
+  stopMicRecording(true);
 });
 document.getElementById("chatToggleBtn").addEventListener("click", function(){
   var panel = document.getElementById("chatPanel");
