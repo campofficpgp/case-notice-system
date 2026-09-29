@@ -23,9 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 html,body{overflow-x:hidden;}
@@ -444,7 +442,7 @@ html,body{overflow-x:hidden;}
         <select id="n_lang"><option value="en">English</option><option value="ur">اردو</option></select>
       </div>
       <button class="btn" id="n_printBtn" data-i18n="btn_print">Print</button>
-      <button class="btn ghost" id="n_pdfBtn" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="n_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
       <button id="hfConfigBtn_notice" type="button" class="btn ghost small" style="display:none;" title="Notice header/footer fields / نوٹس ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button class="btn ghost" id="n_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -514,7 +512,7 @@ html,body{overflow-x:hidden;}
       </select>
     </label>
     <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
-    <button id="globalPdfBtn" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+    <button id="globalPdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
     <button id="hfConfigBtn_causelist" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
     <button id="btnBackup" data-i18n="btn_backup">Backup (save file)</button>
     <button id="btnRestore" data-i18n="btn_restore">Restore from file</button>
@@ -641,7 +639,7 @@ html,body{overflow-x:hidden;}
       <button class="btn secondary" id="r_exportBtn" data-i18n="btn_exportExcel">Export list (Excel)</button>
       <button class="btn ghost" id="colsConfigBtn" data-i18n="btn_selectColumns" style="display:none;">☰ Select print columns</button>
       <button class="btn ghost" id="r_printBtn" data-i18n="btn_printListSummary">Print list &amp; summary</button>
-      <button class="btn ghost" id="r_pdfBtn" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="r_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
     </div>
   </div>
 </main>
@@ -1564,58 +1562,6 @@ function buildPrintExtraFieldsHtml(key){
   }
   return rows.join("");
 }
-/* ================= PDF Download helper (html2pdf.js) =================
-   For the individual Notice (a dedicated #noticePaper element), pdfDownload()
-   just snapshots that element directly. For the Case List/Cause List "whole
-   current view" there is no dedicated printable div -- normally the @media
-   print CSS is what hides the sidebar/toolbar/etc. withPrintCssActive()
-   temporarily turns those @media print rules into normal (always-on) rules,
-   takes the snapshot, then removes them again -- so the PDF matches exactly
-   what Print would produce. This never calls window.print(), so it does not
-   trigger the "prepared by" sign-off modal below -- PDF download is a plain
-   export, not a signed printout. */
-function withPrintCssActive(fn){
-  var css = "";
-  for(var i=0;i<document.styleSheets.length;i++){
-    try{
-      var rules = document.styleSheets[i].cssRules;
-      if(!rules) continue;
-      for(var j=0;j<rules.length;j++){
-        var r = rules[j];
-        if(r.media && r.media.mediaText && r.media.mediaText.indexOf("print")!==-1){
-          for(var k=0;k<r.cssRules.length;k++){ css += r.cssRules[k].cssText + "\n"; }
-        }
-      }
-    }catch(e){}
-  }
-  var styleTag = document.createElement("style");
-  styleTag.textContent = css;
-  document.head.appendChild(styleTag);
-  var cleanup = function(){ try{ document.head.removeChild(styleTag); }catch(e){} };
-  try{ fn(cleanup); }catch(e){ cleanup(); throw e; }
-}
-function pdfCapture(el, filename, orientation, onDone){
-  if(!el){ alert("Nothing to export yet."); if(onDone) onDone(); return; }
-  if(typeof html2pdf === "undefined"){ alert("PDF library did not load — check your internet connection and try again."); if(onDone) onDone(); return; }
-  html2pdf().set({
-    margin: 8,
-    filename: filename || "document.pdf",
-    image: { type: "jpeg", quality: 0.97 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true, height: el.scrollHeight, windowHeight: el.scrollHeight },
-    jsPDF: { unit: "mm", format: "a4", orientation: orientation || "portrait" },
-    pagebreak: { mode: ["css", "legacy"] }
-  }).from(el).save().then(function(){ if(onDone) onDone(); }).catch(function(){ if(onDone) onDone(); });
-}
-function pdfDownload(el, filename){ pdfCapture(el, filename, "portrait", null); }
-function downloadCurrentViewPDF(){
-  var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
-  if(noticeOpen){ pdfDownload(document.getElementById("noticePaper"), "notice.pdf"); return; }
-  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
-  withPrintCssActive(function(cleanup){
-    pdfCapture(document.body, "case-notices.pdf", "portrait", cleanup);
-  });
-}
-
 function printCurrentView(){
   var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
   if(noticeOpen) document.body.classList.add("notice-mode");
@@ -1626,7 +1572,7 @@ window.addEventListener("afterprint", function(){ document.body.classList.remove
 document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
-document.getElementById("globalPdfBtn").addEventListener("click", downloadCurrentViewPDF);
+document.getElementById("globalPdfBtn").addEventListener("click", printCurrentView);
 setPageSize("A4");
 
 function openHfModal(key){
@@ -2557,7 +2503,7 @@ document.getElementById("r_printBtn").addEventListener("click", function(){
 });
 document.getElementById("r_pdfBtn").addEventListener("click", function(){
   document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
-  withPrintCssActive(function(cleanup){ pdfCapture(document.body, "case-notices.pdf", "portrait", cleanup); });
+  window.print();
 });
 
 document.getElementById("r_exportBtn").addEventListener("click", function(){
@@ -2703,7 +2649,7 @@ function renderNotice(){
 document.getElementById("n_lang").addEventListener("change", function(){ renderNoticeFieldCheckboxes(); renderNotice(); });
 document.getElementById("n_paperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("n_printBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); renderNotice(); printCurrentView(); });
-document.getElementById("n_pdfBtn").addEventListener("click", function(){ renderNotice(); pdfDownload(document.getElementById("noticePaper"), "notice.pdf"); });
+document.getElementById("n_pdfBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); renderNotice(); printCurrentView(); });
 document.getElementById("n_closeBtn").addEventListener("click", closeNotice);
 
 /* ---------------- init ---------------- */
