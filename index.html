@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
@@ -442,7 +443,7 @@ html,body{overflow-x:hidden;}
         <select id="n_lang"><option value="en">English</option><option value="ur">اردو</option></select>
       </div>
       <button class="btn" id="n_printBtn" data-i18n="btn_print">Print</button>
-      <button class="btn ghost" id="n_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="n_pdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
       <button id="hfConfigBtn_notice" type="button" class="btn ghost small" style="display:none;" title="Notice header/footer fields / نوٹس ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button class="btn ghost" id="n_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -512,7 +513,7 @@ html,body{overflow-x:hidden;}
       </select>
     </label>
     <button id="globalPrintBtn" data-i18n="btn_printCurrent">Print current view</button>
-    <button id="globalPdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+    <button id="globalPdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
     <button id="hfConfigBtn_causelist" type="button" class="btn ghost small" style="display:none;" title="Report header/footer fields / رپورٹ ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
     <button id="btnBackup" data-i18n="btn_backup">Backup (save file)</button>
     <button id="btnRestore" data-i18n="btn_restore">Restore from file</button>
@@ -639,7 +640,7 @@ html,body{overflow-x:hidden;}
       <button class="btn secondary" id="r_exportBtn" data-i18n="btn_exportExcel">Export list (Excel)</button>
       <button class="btn ghost" id="colsConfigBtn" data-i18n="btn_selectColumns" style="display:none;">☰ Select print columns</button>
       <button class="btn ghost" id="r_printBtn" data-i18n="btn_printListSummary">Print list &amp; summary</button>
-      <button class="btn ghost" id="r_pdfBtn" title="Choose 'Save as PDF' in the print window" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn ghost" id="r_pdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
     </div>
   </div>
 </main>
@@ -765,7 +766,7 @@ html,body{overflow-x:hidden;}
         </details>
         <details class="faq-item">
           <summary data-i18n="help_faq11_q">Is there a "Download PDF" option too?</summary>
-          <div class="faq-answer" data-i18n="help_faq11_a">Yes — next to Print you'll find a "Download PDF" button, on the notice and on the cause list. It opens the same print window; just choose "Save as PDF" (or "Microsoft Print to PDF") as the destination there instead of a physical printer.</div>
+          <div class="faq-answer" data-i18n="help_faq11_a">Yes — next to Print you'll find a "Download PDF" button, on the notice and on the cause list. It builds and downloads a ready PDF file directly, with no print window and no browser header/footer added to it.</div>
         </details>
         <details class="faq-item">
           <summary data-i18n="help_faq8_q">Can I get this data into Excel?</summary>
@@ -1114,7 +1115,7 @@ en: {
   help_faq10_q:"Who can see this data — is it private to our office?",
   help_faq10_a:"Only people who sign in with an account on this system can see it. Access is controlled by the Administrator/Guest roles, and further enforced by the database's own security rules.",
   help_faq11_q:"Is there a \"Download PDF\" option too?",
-  help_faq11_a:"Yes — next to Print you'll find a \"Download PDF\" button, on the notice and on the cause list. It opens the same print window; just choose \"Save as PDF\" (or \"Microsoft Print to PDF\") as the destination there instead of a physical printer.",
+  help_faq11_a:"Yes — next to Print you'll find a \"Download PDF\" button, on the notice and on the cause list. It builds and downloads a ready PDF file directly, with no print window and no browser header/footer added to it.",
   chat_title:"Team Chat", chat_typeMessage:"Type a message…", chat_send:"Send",
   chat_onlineCount:"{n} online", chat_noMessages:"No messages yet — say hello!",
   chat_you:"You", chat_guest:"Guest",
@@ -1203,7 +1204,7 @@ ur: {
   help_faq10_q:"یہ ڈیٹا کون دیکھ سکتا ہے — کیا یہ صرف ہمارے آفس کے لیے محفوظ ہے؟",
   help_faq10_a:"صرف وہی لوگ دیکھ سکتے ہیں جو اس سسٹم پر اپنے اکاؤنٹ سے سائن اِن ہوں۔ رسائی Administrator/Guest کے roles سے کنٹرول ہوتی ہے، اور مزید ڈیٹا بیس کے اپنے سیکیورٹی rules سے محفوظ ہے۔",
   help_faq11_q:"کیا \"Download PDF\" کا آپشن بھی موجود ہے؟",
-  help_faq11_a:"جی ہاں — نوٹس اور کاز لسٹ دونوں پر Print کے ساتھ ہی \"Download PDF\" بٹن موجود ہے۔ یہ وہی پرنٹ ونڈو کھولتا ہے؛ بس وہاں پرنٹر کی بجائے \"Save as PDF\" (یا \"Microsoft Print to PDF\") منتخب کر لیں۔",
+  help_faq11_a:"جی ہاں — نوٹس اور کاز لسٹ دونوں پر Print کے ساتھ ہی \"Download PDF\" بٹن موجود ہے۔ یہ کوئی پرنٹ ونڈو کھولے بغیر سیدھی ایک تیار PDF فائل بنا کر ڈاؤن لوڈ کر دیتا ہے — نہ کوئی پرنٹ ونڈو، نہ browser کا کوئی اضافی ہیڈر/فوٹر۔",
   chat_title:"ٹیم چیٹ", chat_typeMessage:"پیغام لکھیں…", chat_send:"بھیجیں",
   chat_onlineCount:"{n} آن لائن", chat_noMessages:"ابھی تک کوئی پیغام نہیں — سلام کہیں!",
   chat_you:"آپ", chat_guest:"مہمان",
@@ -1580,8 +1581,61 @@ window.addEventListener("afterprint", function(){ document.body.classList.remove
 document.getElementById("globalPaperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("uiLangSelect").addEventListener("change", function(){ applyUILang(this.value); });
 document.getElementById("globalPrintBtn").addEventListener("click", printCurrentView);
-document.getElementById("globalPdfBtn").addEventListener("click", printCurrentView);
 setPageSize("A4");
+
+/* ================= Real "Download PDF" — an actual file, not the print dialog =================
+   See bill-register-system's equivalent function for the full rationale: the old Download PDF
+   buttons just called printCurrentView() (window.print()) and relied on the user picking
+   "Save as PDF" in the browser's print window, which stamps its own header/footer onto the
+   result. This builds a real PDF file client-side (html2pdf.js) and downloads it directly. */
+function withPrintRulesActive(fn){
+  var touched = [];
+  Array.prototype.forEach.call(document.styleSheets, function(sheet){
+    var rules;
+    try{ rules = sheet.cssRules; }catch(e){ return; }
+    if(!rules) return;
+    Array.prototype.forEach.call(rules, function(rule){
+      if(rule.type === CSSRule.MEDIA_RULE && rule.media && rule.media.mediaText.indexOf("print") !== -1){
+        touched.push({rule: rule, original: rule.media.mediaText});
+        try{ rule.media.mediaText = "all"; }catch(e){/* ignore */}
+      }
+    });
+  });
+  return Promise.resolve().then(fn).finally(function(){
+    touched.forEach(function(t){
+      try{ t.rule.media.mediaText = t.original; }catch(e){/* ignore */}
+    });
+  });
+}
+var PDF_PAPER_MM = { A4:{w:210,h:297}, Legal:{w:215.9,h:355.6}, Foolscap:{w:215.9,h:330.2} };
+function downloadCurrentViewAsPdf(paperSizeKey){
+  var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
+  if(noticeOpen) document.body.classList.add("notice-mode");
+  else document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
+  var paper = PDF_PAPER_MM[paperSizeKey] || PDF_PAPER_MM.A4;
+  var target = noticeOpen ? document.getElementById("noticeOverlay") : document.getElementById("appMain");
+  var filename = noticeOpen
+    ? "CampOffice-Notice-"+String(document.getElementById("noticeOverlay").dataset.caseId||"").replace(/[^A-Za-z0-9]+/g,'-')+".pdf"
+    : "CampOffice-CauseList-"+todayStr()+".pdf";
+  withPrintRulesActive(function(){
+    return html2pdf().set({
+      margin: [14,14,14,14],
+      filename: filename,
+      image: {type:"jpeg", quality:0.98},
+      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth},
+      jsPDF: {unit:"mm", format:[paper.w, paper.h], orientation:"portrait"},
+      pagebreak: {mode:["css","legacy"]}
+    }).from(target).save();
+  }).catch(function(err){
+    console.error("PDF export failed:", err);
+    toast("PDF بنانے میں خرابی — دوبارہ کوشش کریں۔ / Could not build the PDF — please try again.");
+  }).finally(function(){
+    document.body.classList.remove("notice-mode");
+  });
+}
+document.getElementById("globalPdfBtn").addEventListener("click", function(){
+  downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
+});
 
 function openHfModal(key){
   if(!isAdmin()){ toast("Only an Administrator can change header/footer fields."); return; }
@@ -2510,8 +2564,7 @@ document.getElementById("r_printBtn").addEventListener("click", function(){
   window.print();
 });
 document.getElementById("r_pdfBtn").addEventListener("click", function(){
-  document.getElementById("pbPrintExtraFields").innerHTML = buildPrintExtraFieldsHtml("causelist");
-  window.print();
+  downloadCurrentViewAsPdf(document.getElementById("globalPaperSize").value);
 });
 
 document.getElementById("r_exportBtn").addEventListener("click", function(){
@@ -2657,7 +2710,11 @@ function renderNotice(){
 document.getElementById("n_lang").addEventListener("change", function(){ renderNoticeFieldCheckboxes(); renderNotice(); });
 document.getElementById("n_paperSize").addEventListener("change", function(){ setPageSize(this.value); });
 document.getElementById("n_printBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); renderNotice(); printCurrentView(); });
-document.getElementById("n_pdfBtn").addEventListener("click", function(){ setPageSize(document.getElementById("n_paperSize").value); renderNotice(); printCurrentView(); });
+document.getElementById("n_pdfBtn").addEventListener("click", function(){
+  var sizeKey = document.getElementById("n_paperSize").value;
+  setPageSize(sizeKey); renderNotice();
+  downloadCurrentViewAsPdf(sizeKey);
+});
 document.getElementById("n_closeBtn").addEventListener("click", closeNotice);
 
 /* ---------------- init ---------------- */
