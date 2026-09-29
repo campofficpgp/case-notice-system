@@ -201,6 +201,10 @@ html,body{overflow-x:hidden;}
     nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,.auth-screen,footer,
     .panel-head p,.appfoot-copyright{display:none !important;}
     body{background:#fff;}
+    /* Wide tables (with several custom fields added via Field Manager) scroll horizontally
+       on screen (.table-wrap{overflow-x:auto}) — let the full table render at its natural
+       width during capture instead of only the currently-scrolled-into-view columns. */
+    .table-wrap{overflow-x:visible !important;}
     body:not(.notice-mode) .notice-overlay{display:none !important;}
     body.notice-mode > #appMain, body.notice-mode > .toast{display:none !important;}
     /* The Notice already carries its own header/office identity (.notice-header), so the
