@@ -199,7 +199,12 @@ html,body{overflow-x:hidden;}
   .stamp::before{content:"";position:absolute;inset:6px;border:1px dashed #7a1010;border-radius:50%;}
   @media print{
     nav,.search-bar,.btnbar,.userbar,.topbar,.row-actions,.row-actions-th,.card.entry-form,.auth-screen,footer,
-    .panel-head p,.appfoot-copyright{display:none !important;}
+    .panel-head p,.appfoot-copyright,
+    .sidebar,.sidebar-backdrop{display:none !important;}
+    /* The portal-wide navigation sidebar (Dashboard/Case Management/Reports links etc.) is
+       chrome, not report content — without this it was rendering into every downloaded PDF. */
+    .app-shell{display:block !important;}
+    .main-col{width:100% !important;}
     body{background:#fff;}
     /* Wide tables (with several custom fields added via Field Manager) scroll horizontally
        on screen (.table-wrap{overflow-x:auto}) — let the full table render at its natural
@@ -1621,12 +1626,17 @@ function downloadCurrentViewAsPdf(paperSizeKey){
   var filename = noticeOpen
     ? "CampOffice-Notice-"+String(document.getElementById("noticeOverlay").dataset.caseId||"").replace(/[^A-Za-z0-9]+/g,'-')+".pdf"
     : "CampOffice-CauseList-"+todayStr()+".pdf";
+  /* Reset scroll before capture: html2canvas otherwise offsets the capture by whatever the
+     real page's current scroll position happens to be (left over from browsing a wide table
+     or a different panel), cropping/shifting the result — scrollX/scrollY:0 below tells it
+     not to add that offset, and this scrollTo makes sure there genuinely isn't one to add. */
+  window.scrollTo(0,0);
   withPrintRulesActive(function(){
     return html2pdf().set({
       margin: [14,14,14,14],
       filename: filename,
       image: {type:"jpeg", quality:0.98},
-      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth},
+      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth, scrollX:0, scrollY:0},
       jsPDF: {unit:"mm", format:[paper.w, paper.h], orientation:"portrait"},
       pagebreak: {mode:["css","legacy"]}
     }).from(target).save();
