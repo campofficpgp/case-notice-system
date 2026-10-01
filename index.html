@@ -21,7 +21,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- html2pdf.js 0.10.1 had a bug in this app's environment: its internal wrapper around
+     html2canvas comes back with a 0-height canvas, so every PDF it built was a blank page
+     (confirmed by direct testing on cmpofficepgp.org). Replaced with jsPDF here, combined by
+     hand with the html2canvas below (which already worked fine) in downloadCurrentViewAsPdf(). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><!-- Sends the super-admin security code by email (see "Super Admin Email OTP Gate" below) -->
@@ -152,6 +157,8 @@ html,body{overflow-x:hidden;}
   button.btn.ghost:hover{background:#f1f0ec;}
   button.btn.danger{background:#fff;color:var(--danger);border-color:var(--danger);}
   button.btn.small{padding:5px 10px;font-size:12px;}
+  button.btn.whatsapp{background:#25D366;border-color:#1eb959;color:#fff;}
+  button.btn.whatsapp:hover{background:#1eb959;}
 
   .search-bar{background:var(--amber-tint);border:1px solid #E7D6A8;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;}
   .search-bar h3{color:var(--amber);}
@@ -458,6 +465,9 @@ html,body{overflow-x:hidden;}
       </div>
       <button class="btn" id="n_printBtn" data-i18n="btn_print">Print</button>
       <button class="btn ghost" id="n_pdfBtn" title="Downloads a ready PDF file directly" data-i18n="btn_downloadPdf">📄 Download PDF</button>
+      <button class="btn whatsapp" id="n_whatsappBtn" data-i18n="btn_shareWhatsapp">🟢 Send via WhatsApp</button>
+      <button class="btn secondary" id="n_emailBtn" data-i18n="btn_shareEmail">✉️ Send via Email</button>
+      <button class="btn ghost" id="n_downloadImgBtn" data-i18n="btn_downloadImage">⬇️ Download Image</button>
       <button id="hfConfigBtn_notice" type="button" class="btn ghost small" style="display:none;" title="Notice header/footer fields / نوٹس ہیڈر/فوٹر فیلڈز">☰ Header/Footer</button>
       <button class="btn ghost" id="n_closeBtn" data-i18n="btn_close">Close</button>
     </div>
@@ -466,6 +476,7 @@ html,body{overflow-x:hidden;}
       <div id="n_fieldsCheckboxes" style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px;"></div>
     </div>
     <div class="notice-paper" id="noticePaper"></div>
+    <div class="field-hint" style="padding:0 20px 16px;" data-i18n="notice_shareHint">WhatsApp/Email will open with the notice details as text and the notice image will download automatically — if it doesn't attach itself, just attach the downloaded image manually (one extra tap).</div>
   </div>
 </div>
 
@@ -535,7 +546,6 @@ html,body{overflow-x:hidden;}
     <input type="file" id="restoreFile" accept="application/json" style="display:none">
     <span><span data-i18n="lbl_signedInAs">Signed in as</span> <b id="currentUserLabel">—</b> <span class="role-badge" id="currentUserRole"></span></span>
     <a href="../" class="btn ghost small" title="Home / پورٹل پر واپس جائیں" style="text-decoration:none;">🏠 Home</a>
-    <a href="../#ads" class="btn ghost small" title="اشتہارات دیکھیں / View Advertisements" style="text-decoration:none;">📢 اشتہارات / Ads</a>
       <button id="logoutBtn" data-i18n="btn_logout">Log out</button>
     <img class="topbar-logo-sm" src="logo-public-prosecution.png" alt="Public Prosecution Punjab" style="height:26px;width:auto;">
   </div>
@@ -1062,6 +1072,8 @@ en: {
   auth_backToSignin:"Back to sign in", auth_warnText:"Data is stored online in this system's shared Firebase database. Only Administrators can add, edit, or delete case entries; Guests can view and print everything.",
   auth_signin:"Sign in", auth_email:"Email", auth_createNewAccount:"Create a new account", auth_forgotPassword:"Forgot password?",
   lbl_paperSize:"Paper size", lbl_language:"Language", btn_print:"Print", btn_close:"Close", btn_downloadPdf:"📄 Download PDF",
+  btn_shareWhatsapp:"🟢 Send via WhatsApp", btn_shareEmail:"✉️ Send via Email", btn_downloadImage:"⬇️ Download Image",
+  notice_shareHint:"WhatsApp/Email will open with the notice details as text and the notice image will download automatically — if it doesn't attach itself, just attach the downloaded image manually (one extra tap).",
   app_title:"Case Notice System", app_subtitle:"Camp Office Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad",
   btn_printCurrent:"Print current view", btn_backup:"Backup (save file)", btn_restore:"Restore from file",
   lbl_signedInAs:"Signed in as", btn_logout:"Log out",
@@ -1151,6 +1163,8 @@ ur: {
   auth_backToSignin:"سائن ان پر واپس جائیں", auth_warnText:"Data اس سسٹم کے مشترکہ Firebase database میں آن لائن محفوظ ہوتا ہے۔ صرف Administrator ہی کیس شامل، ترمیم یا حذف کر سکتا ہے؛ Guest صرف دیکھ اور پرنٹ کر سکتا ہے۔",
   auth_signin:"سائن ان", auth_email:"ای میل", auth_createNewAccount:"نیا اکاؤنٹ بنائیں", auth_forgotPassword:"پاسورڈ بھول گئے؟",
   lbl_paperSize:"کاغذ کا سائز", lbl_language:"زبان", btn_print:"پرنٹ", btn_close:"بند کریں", btn_downloadPdf:"📄 PDF ڈاؤن لوڈ کریں",
+  btn_shareWhatsapp:"🟢 واٹس ایپ پر بھیجیں", btn_shareEmail:"✉️ ای میل پر بھیجیں", btn_downloadImage:"⬇️ تصویر ڈاؤن لوڈ کریں",
+  notice_shareHint:"واٹس ایپ/ای میل کھلتے ہی نوٹس کی تفصیل ٹیکسٹ کے طور پر آ جائے گی اور نوٹس کی تصویر خودکار ڈاؤن لوڈ ہو جائے گی — اگر خودکار اٹیچ نہ ہو تو ڈاؤن لوڈ شدہ تصویر کو خود منسلک کر لیں۔",
   app_title:"کیس نوٹس سسٹم", app_subtitle:"کیمپ آفس پراسیکیوٹر جنرل پنجاب، سپریم کورٹ آف پاکستان، اسلام آباد",
   btn_printCurrent:"موجودہ صفحہ پرنٹ کریں", btn_backup:"بیک اپ (فائل محفوظ کریں)", btn_restore:"فائل سے بحال کریں",
   lbl_signedInAs:"سائن اِن ہیں بطور", btn_logout:"لاگ آؤٹ",
@@ -1297,7 +1311,7 @@ function normalizeData(data){
   data.caseTypeMaster = data.caseTypeMaster || [];
   data.caseNoPrefixMaster = (data.caseNoPrefixMaster && data.caseNoPrefixMaster.length)? data.caseNoPrefixMaster : ["Crl.PLA-"];
   data.underSectionMaster = data.underSectionMaster || [];
-  data.senderName = data.senderName || "Rashid Mehmood";
+  data.senderName = data.senderName || "";
   data.senderDesignation = data.senderDesignation || "Focal Person";
   data.senderMobile = data.senderMobile || "0300-0000000";
   data.senderPhone = data.senderPhone || "051-9202466";
@@ -1621,6 +1635,42 @@ function withPrintRulesActive(fn){
     });
   });
 }
+/* Builds and saves a PDF from `target` using html2canvas + jsPDF directly instead of
+   html2pdf.js, whose own internal wrapper comes back with a 0-height canvas in this app's
+   environment (confirmed by direct testing on the live site — every PDF it built was a
+   blank page, no error, regardless of what was being captured). html2canvas itself works
+   fine; jsPDF composes the final file by hand, with pagination for content taller than one
+   page (sliced the same way a long document would paginate when printed). */
+function buildPdfFromElement(target, filename, marginMm, jsPdfFormat, jsPdfOrientation, html2canvasOpts){
+  var opts = Object.assign({scale:2, useCORS:true, logging:false}, html2canvasOpts || {});
+  return html2canvas(target, opts).then(function(canvas){
+    var JsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    var pdf = new JsPDFCtor({unit:"mm", format: jsPdfFormat, orientation: jsPdfOrientation});
+    var imgWmm = pdf.internal.pageSize.getWidth() - marginMm*2;
+    var imgHmm = canvas.height * imgWmm / canvas.width;
+    var pageHmm = pdf.internal.pageSize.getHeight() - marginMm*2;
+    var imgData = canvas.toDataURL("image/jpeg", 0.98);
+    if (imgHmm <= pageHmm) {
+      pdf.addImage(imgData, "JPEG", marginMm, marginMm, imgWmm, imgHmm);
+    } else {
+      var pxPerPage = Math.floor(pageHmm * canvas.width / imgWmm);
+      var sliceCanvas = document.createElement("canvas");
+      sliceCanvas.width = canvas.width;
+      var sctx = sliceCanvas.getContext("2d");
+      var remaining = canvas.height, y = 0, first = true;
+      while (remaining > 0) {
+        var sliceH = Math.min(pxPerPage, remaining);
+        sliceCanvas.height = sliceH;
+        sctx.clearRect(0, 0, sliceCanvas.width, sliceH);
+        sctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        if (!first) pdf.addPage();
+        pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.98), "JPEG", marginMm, marginMm, imgWmm, sliceH * imgWmm / canvas.width);
+        y += sliceH; remaining -= sliceH; first = false;
+      }
+    }
+    pdf.save(filename);
+  });
+}
 var PDF_PAPER_MM = { A4:{w:210,h:297}, Legal:{w:215.9,h:355.6}, Foolscap:{w:215.9,h:330.2} };
 function downloadCurrentViewAsPdf(paperSizeKey){
   var noticeOpen = document.getElementById("noticeOverlay").style.display === "flex";
@@ -1637,14 +1687,7 @@ function downloadCurrentViewAsPdf(paperSizeKey){
      not to add that offset, and this scrollTo makes sure there genuinely isn't one to add. */
   window.scrollTo(0,0);
   withPrintRulesActive(function(){
-    return html2pdf().set({
-      margin: [14,14,14,14],
-      filename: filename,
-      image: {type:"jpeg", quality:0.98},
-      html2canvas: {scale:2, useCORS:true, logging:false, windowWidth: target.scrollWidth, scrollX:0, scrollY:0},
-      jsPDF: {unit:"mm", format:[paper.w, paper.h], orientation:"portrait"},
-      pagebreak: {mode:["css","legacy"]}
-    }).from(target).save();
+    return buildPdfFromElement(target, filename, 14, [paper.w, paper.h], "portrait", {windowWidth: target.scrollWidth, scrollX:0, scrollY:0});
   }).catch(function(err){
     console.error("PDF export failed:", err);
     toast("PDF بنانے میں خرابی — دوبارہ کوشش کریں۔ / Could not build the PDF — please try again.");
@@ -2637,7 +2680,7 @@ var I18N = {
         "You are hereby directed to appear in person, along with the complete record pertaining to the above-mentioned case, at 8:00 AM at "+office+", and to remain present until the disposal of the matter. The complainant of the case shall also be informed accordingly. Non-compliance shall be viewed seriously and appropriate action shall be taken as deemed necessary.";
     },
     sender:"Sent by", name:"Name", designation:"Designation", mobile:"Mobile No", phone:"Office Phone",
-    stamp:"CAMP OFFICE\nPROSECUTOR\nGENERAL PUNJAB"
+    stamp:""
   },
   ur: {
     title:"نوٹس", caseNo:"کیس نمبر / سی آر ایل پی ایل اے نمبر", titleOfCase:"عنوانِ مقدمہ", vs:"بمقابلہ", caseType:"کیس کی قسم",
@@ -2648,7 +2691,7 @@ var I18N = {
         "عدم تعمیل کو سنجیدگی سے لیا جائے گا اور ضرورت کے مطابق کارروائی کی جائے گی۔";
     },
     sender:"ارسال کنندہ", name:"نام", designation:"عہدہ", mobile:"موبائل نمبر", phone:"دفتری فون",
-    stamp:"کیمپ آفس\nپراسیکیوٹر\nجنرل پنجاب"
+    stamp:""
   }
 };
 /* Label + value getters for every field the printed Notice's meta block can show, keyed to match
@@ -2694,6 +2737,92 @@ function openNotice(caseId){
   renderNotice();
 }
 function closeNotice(){ document.getElementById("noticeOverlay").style.display = "none"; }
+
+/* ================= NOTICE — WhatsApp / Email / Download Image =================
+   Captures the rendered #noticePaper (the same content the Print/PDF buttons use)
+   as a PNG via html2canvas, then either hands it to the device's native share sheet
+   (navigator.share, mobile browsers) or falls back to downloading the PNG and opening
+   WhatsApp Web / a mailto: draft with the notice details pre-filled as text — same
+   pattern already used in camp-office-suite/case-notice.html, adapted to this
+   system's field names and notice markup. */
+function noticeShareFileName(c, ext){
+  var safeCaseNo = String(c && c.caseNo || "Notice").replace(/[^A-Za-z0-9]+/g, "-");
+  return "CampOffice-Notice-" + safeCaseNo + "." + ext;
+}
+function buildNoticeShareText(c){
+  var lang = document.getElementById("n_lang").value;
+  var t = I18N[lang];
+  return t.title + " — " + (c.caseNo||"") + "\n" +
+    t.titleOfCase + ": " + (c.title||"") + " " + t.vs + " " + (c.vs||"") + "\n" +
+    t.caseType + ": " + (c.caseType||"") + "\n" +
+    t.firNo + ": " + (c.firNo||"") + (c.underSection? ("  " + t.underSection + ": " + c.underSection) : "") + "\n" +
+    t.ps + ": " + (c.ps||"") + ", " + t.tehsil + ": " + (c.tehsil||"—") + ", " + t.district + ": " + (c.district||"") + "\n" +
+    t.bench + ": " + benchLabel(c.bench) + (c.serial? ("  |  " + t.serial + ": " + c.serial) : "") + "\n" +
+    t.fixedDate + ": " + (c.fixedDate||"");
+}
+function currentNoticeCase(){
+  var overlay = document.getElementById("noticeOverlay");
+  return STATE.cases.find(function(x){ return x.id===overlay.dataset.caseId; });
+}
+function generateNoticeCanvas(){
+  return withPrintRulesActive(function(){
+    return html2canvas(document.getElementById("noticePaper"), {backgroundColor:"#ffffff", scale:2, useCORS:true, logging:false});
+  });
+}
+function downloadNoticeImage(){
+  var c = currentNoticeCase();
+  if(!c) return;
+  if(typeof html2canvas === "undefined"){
+    toast("Image tool failed to load — please check your internet connection / تصویر بنانے کی سہولت لوڈ نہیں ہو سکی");
+    return;
+  }
+  generateNoticeCanvas().then(function(canvas){
+    var link = document.createElement("a");
+    link.download = noticeShareFileName(c, "png");
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }).catch(function(){
+    toast("Could not generate the notice image / تصویر بنانے میں مسئلہ ہوا");
+  });
+}
+function openShareFallback(channel, text){
+  if(channel==="whatsapp"){
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    toast("The notice image has been downloaded — attach it in WhatsApp using 📎. / نوٹس کی تصویر ڈاؤن لوڈ ہو چکی ہے — واٹس ایپ میں منسلک کر دیں۔");
+  } else {
+    var c = currentNoticeCase();
+    var subject = c ? ("Case Notice " + (c.caseNo||"")) : "Case Notice";
+    window.location.href = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+    toast("The notice image has been downloaded — attach it to your email. / نوٹس کی تصویر ڈاؤن لوڈ ہو چکی ہے — ای میل میں منسلک کر دیں۔");
+  }
+}
+function shareNotice(channel){
+  var c = currentNoticeCase();
+  if(!c) return;
+  var text = buildNoticeShareText(c);
+  if(typeof html2canvas === "undefined"){ openShareFallback(channel, text); return; }
+  generateNoticeCanvas().then(function(canvas){
+    canvas.toBlob(function(blob){
+      if(!blob){ openShareFallback(channel, text); return; }
+      var file;
+      try{ file = new File([blob], noticeShareFileName(c,"png"), {type:"image/png"}); }catch(e){ file = null; }
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:"Case Notice", text:text}).catch(function(){ /* user cancelled */ });
+        return;
+      }
+      var link = document.createElement("a");
+      link.download = noticeShareFileName(c, "png");
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(function(){ openShareFallback(channel, text); }, 400);
+    }, "image/png");
+  }).catch(function(){
+    openShareFallback(channel, text);
+  });
+}
+document.getElementById("n_whatsappBtn").addEventListener("click", function(){ shareNotice("whatsapp"); });
+document.getElementById("n_emailBtn").addEventListener("click", function(){ shareNotice("email"); });
+document.getElementById("n_downloadImgBtn").addEventListener("click", downloadNoticeImage);
 function renderNotice(){
   var overlay = document.getElementById("noticeOverlay");
   var c = STATE.cases.find(function(x){ return x.id===overlay.dataset.caseId; });
@@ -2718,7 +2847,7 @@ function renderNotice(){
     "<div class='notice-body'>"+esc(t.body(c, office)).replace(/\n/g,"<br>")+"</div>"+
     "<div class='notice-sign-block'>"+
       "<div class='notice-sender'>"+t.sender+":<br><b>"+esc(STATE.senderName)+"</b><br>"+t.designation+": "+esc(STATE.senderDesignation)+"<br>"+t.mobile+": "+esc(STATE.senderMobile)+"<br>"+t.phone+": "+esc(STATE.senderPhone)+"</div>"+
-      "<div class='stamp'>"+esc(t.stamp).replace(/\n/g,"<br>")+"</div>"+
+      (t.stamp? ("<div class='stamp'>"+esc(t.stamp).replace(/\n/g,"<br>")+"</div>") : "")+
     "</div>";
 
   var paper = document.getElementById("noticePaper");
