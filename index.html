@@ -1070,7 +1070,7 @@ en: {
   auth_createAccount:"Create an account", auth_newAccountsNote:"New accounts start as \"Guest\" (view-only). An existing Administrator must upgrade your role afterwards.",
   auth_yourEmail:"Your email", auth_password:"Password", auth_confirmPassword:"Confirm password", auth_createAccountBtn:"Create account",
   auth_backToSignin:"Back to sign in", auth_warnText:"Data is stored online in this system's shared Firebase database. Only Administrators can add, edit, or delete case entries; Guests can view and print everything.",
-  auth_signin:"Sign in", auth_email:"Email", auth_createNewAccount:"Create a new account", auth_forgotPassword:"Forgot password?",
+  auth_signin:"Sign in", auth_signingIn:"Signing in…", auth_email:"Email", auth_createNewAccount:"Create a new account", auth_forgotPassword:"Forgot password?",
   lbl_paperSize:"Paper size", lbl_language:"Language", btn_print:"Print", btn_close:"Close", btn_downloadPdf:"📄 Download PDF",
   btn_shareWhatsapp:"🟢 Send via WhatsApp", btn_shareEmail:"✉️ Send via Email", btn_downloadImage:"⬇️ Download Image",
   notice_shareHint:"WhatsApp/Email will open with the notice details as text and the notice image will download automatically — if it doesn't attach itself, just attach the downloaded image manually (one extra tap).",
@@ -1161,7 +1161,7 @@ ur: {
   auth_createAccount:"اکاؤنٹ بنائیں", auth_newAccountsNote:"نئے اکاؤنٹس \"Guest\" (صرف دیکھنے والے) کے طور پر شروع ہوتے ہیں۔ کوئی موجودہ Administrator بعد میں آپ کا role اپ گریڈ کرے گا۔",
   auth_yourEmail:"آپ کا ای میل", auth_password:"پاسورڈ", auth_confirmPassword:"پاسورڈ کی تصدیق", auth_createAccountBtn:"اکاؤنٹ بنائیں",
   auth_backToSignin:"سائن ان پر واپس جائیں", auth_warnText:"Data اس سسٹم کے مشترکہ Firebase database میں آن لائن محفوظ ہوتا ہے۔ صرف Administrator ہی کیس شامل، ترمیم یا حذف کر سکتا ہے؛ Guest صرف دیکھ اور پرنٹ کر سکتا ہے۔",
-  auth_signin:"سائن ان", auth_email:"ای میل", auth_createNewAccount:"نیا اکاؤنٹ بنائیں", auth_forgotPassword:"پاسورڈ بھول گئے؟",
+  auth_signin:"سائن ان", auth_signingIn:"سائن اِن ہو رہا ہے…", auth_email:"ای میل", auth_createNewAccount:"نیا اکاؤنٹ بنائیں", auth_forgotPassword:"پاسورڈ بھول گئے؟",
   lbl_paperSize:"کاغذ کا سائز", lbl_language:"زبان", btn_print:"پرنٹ", btn_close:"بند کریں", btn_downloadPdf:"📄 PDF ڈاؤن لوڈ کریں",
   btn_shareWhatsapp:"🟢 واٹس ایپ پر بھیجیں", btn_shareEmail:"✉️ ای میل پر بھیجیں", btn_downloadImage:"⬇️ تصویر ڈاؤن لوڈ کریں",
   notice_shareHint:"واٹس ایپ/ای میل کھلتے ہی نوٹس کی تفصیل ٹیکسٹ کے طور پر آ جائے گی اور نوٹس کی تصویر خودکار ڈاؤن لوڈ ہو جائے گی — اگر خودکار اٹیچ نہ ہو تو ڈاؤن لوڈ شدہ تصویر کو خود منسلک کر لیں۔",
@@ -1906,10 +1906,16 @@ document.getElementById("setupBtn").addEventListener("click", function(){
 });
 document.getElementById("setup_password2").addEventListener("keydown", function(ev){ if(ev.key==="Enter") document.getElementById("setupBtn").click(); });
 document.getElementById("loginBtn").addEventListener("click", function(){
+  var btn = document.getElementById("loginBtn");
+  if(btn.disabled) return; /* guard against double-clicks while a sign-in is already in progress */
   var email = document.getElementById("login_username").value.trim();
   var pw = document.getElementById("login_password").value;
   var err = document.getElementById("loginError"); err.textContent="";
-  auth.signInWithEmailAndPassword(email, pw).catch(function(){ err.textContent="Incorrect email or password."; });
+  btn.disabled = true; btn.textContent = t("auth_signingIn"); /* visible feedback so the button never looks stuck/frozen */
+  auth.signInWithEmailAndPassword(email, pw).catch(function(){
+    err.textContent="Incorrect email or password.";
+    btn.disabled = false; btn.textContent = t("auth_signin");
+  });
 });
 document.getElementById("login_password").addEventListener("keydown", function(ev){ if(ev.key==="Enter") document.getElementById("loginBtn").click(); });
 document.getElementById("logoutBtn").addEventListener("click", function(){ auth.signOut(); });
