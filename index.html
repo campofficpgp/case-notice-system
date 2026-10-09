@@ -460,6 +460,10 @@ html,body{overflow-x:hidden;}
   }
   @media (min-width:961px){ #mobileMenuBtn{ display:none !important; } }
   @media print{ .tool-strip{ display:none !important; } }
+  /* chat panel: full-screen option (same three controls on every widget: minimize, full screen, close) */
+  .chat-head .chat-head-btns{display:flex;gap:6px;align-items:flex-start;}
+  #chatPanel.full{width:100%;}
+  @media print{ #chatPanel{display:none !important;} }
 </style>
 </head>
 <body>
@@ -731,7 +735,7 @@ html,body{overflow-x:hidden;}
       <h3 data-i18n="chat_title">Team Chat</h3>
       <div class="chat-online" id="chatOnlineLabel"></div>
     </div>
-    <button id="chatCloseBtn">✕</button>
+    <span class="chat-head-btns"><button id="chatFullBtn" type="button" title="Full screen / فل اسکرین" aria-label="Full screen / فل اسکرین">⛶</button><button id="chatCloseBtn">✕</button></span>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-upload-progress" id="chatUploadProgress" style="display:none;"></div>
@@ -3161,5 +3165,17 @@ window.__campOfficeBridge = {
 })();
 </script>
 <script src="https://cmpofficepgp.org/camp-office-suite/form-history.js" defer></script>
+<script src="https://cmpofficepgp.org/camp-office-suite/a11y.js" defer></script>
+<script>
+/* chat panel: full-screen button */
+(function(){
+  var p=document.getElementById('chatPanel'), b=document.getElementById('chatFullBtn'), c=document.getElementById('chatCloseBtn');
+  if(!p||!b) return;
+  function set(on){ p.classList.toggle('full',on); b.textContent=on?'🗗':'⛶'; b.title=on?'Exit full screen / فل اسکرین ختم':'Full screen / فل اسکرین'; b.setAttribute('aria-label',b.title); }
+  b.addEventListener('click',function(){ set(!p.classList.contains('full')); });
+  if(c) c.addEventListener('click',function(){ set(false); });
+  set(false);
+})();
+</script>
 </body>
 </html>
