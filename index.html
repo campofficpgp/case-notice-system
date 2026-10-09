@@ -266,6 +266,14 @@ html,body{overflow-x:hidden;}
     display:flex;align-items:center;justify-content:center;font-size:22px;padding:0;
   }
   #chatToggleBtn:hover{background:var(--navy-dark);}
+  /* chat bubble: small minimise / expand control */
+  #chatMinBtn{position:fixed;right:62px;bottom:122px;z-index:997;width:24px;height:24px;border-radius:50%;background:#fff;color:#10263D;border:1.5px solid #10263D;
+    box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;padding:0;font:700 15px/1 Arial,sans-serif;display:flex;align-items:center;justify-content:center;}
+  #chatMinBtn:hover{background:#eef3f8;}
+  body.chat-mini #chatToggleBtn{width:34px;height:34px;font-size:16px;opacity:.88;}
+  body.chat-mini #chatToggleBtn .chat-badge{top:-6px;right:-6px;}
+  body.chat-mini #chatMinBtn{right:44px;bottom:104px;}
+  @media print{ #chatMinBtn{display:none !important;} }
   #chatToggleBtn .chat-badge{
     position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;
     border-radius:999px;min-width:19px;height:19px;font-size:11px;font-weight:700;
@@ -674,6 +682,7 @@ html,body{overflow-x:hidden;}
 <div class="appfoot-copyright" style="text-align:center;font-size:11px;color:#8aa0b3;padding:6px 10px 14px;">© Iftikhar Ahmed — Camp Office, Prosecutor General Punjab, Supreme Court of Pakistan, Islamabad &nbsp;|&nbsp; © افتخار احمد — کیمپ آفس، پراسیکیوٹر جنرل پنجاب، سپریم کورٹ آف پاکستان، اسلام آباد</div>
 
 <button id="chatToggleBtn" title="Team Chat">💬<span class="chat-badge" id="chatBadge" style="display:none;">0</span></button>
+<button id="chatMinBtn" type="button" title="Minimize chat button / چیٹ کا بٹن چھوٹا کریں" aria-label="Minimize chat button / چیٹ کا بٹن چھوٹا کریں">–</button>
 <div id="chatPanel">
   <div class="chat-head">
     <div>
@@ -2353,6 +2362,19 @@ document.getElementById("chatMicBtn").addEventListener("click", function(){
 document.getElementById("chatMicCancelBtn").addEventListener("click", function(){
   stopMicRecording(true);
 });
+/* chat bubble: minimise / expand (remembered in this browser) */
+(function(){
+  var b = document.getElementById("chatMinBtn"); if(!b) return;
+  var mini = false; try{ mini = localStorage.getItem("chatMini_v1") === "1"; }catch(e){}
+  function apply(){
+    document.body.classList.toggle("chat-mini", mini);
+    b.textContent = mini ? "+" : "–";
+    var t = mini ? "Expand chat button / چیٹ کا بٹن بڑا کریں" : "Minimize chat button / چیٹ کا بٹن چھوٹا کریں";
+    b.title = t; b.setAttribute("aria-label", t);
+  }
+  apply();
+  b.addEventListener("click", function(){ mini = !mini; try{ localStorage.setItem("chatMini_v1", mini ? "1" : "0"); }catch(e){} apply(); });
+})();
 document.getElementById("chatToggleBtn").addEventListener("click", function(){
   var panel = document.getElementById("chatPanel");
   var opening = !panel.classList.contains("open");
