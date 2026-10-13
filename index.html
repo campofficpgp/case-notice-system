@@ -741,7 +741,7 @@ html,body{overflow-x:hidden;}
       <h3 data-i18n="chat_title">Team Chat</h3>
       <div class="chat-online" id="chatOnlineLabel"></div>
     </div>
-    <span class="chat-head-btns"><button id="chatFullBtn" type="button" title="Full screen / فل اسکرین" aria-label="Full screen / فل اسکرین">⛶</button><button id="chatCloseBtn">✕</button></span>
+    <span class="chat-head-btns"><button id="chatPanelMinBtn" type="button" title="Minimize / چھوٹا کریں" aria-label="Minimize / چھوٹا کریں"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 10h8"/></svg></button><button id="chatFullBtn" type="button" title="Bigger / بڑا کریں" aria-label="Bigger / بڑا کریں"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1"/></svg></button><button id="chatCloseBtn" type="button" title="Close / بند کریں" aria-label="Close / بند کریں"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg></button></span>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-upload-progress" id="chatUploadProgress" style="display:none;"></div>
@@ -3173,14 +3173,32 @@ window.__campOfficeBridge = {
 <script src="https://cmpofficepgp.org/camp-office-suite/form-history.js" defer></script>
 <script src="https://cmpofficepgp.org/camp-office-suite/a11y.js" defer></script>
 <script>
-/* chat panel: full-screen button */
+/* chat panel: the same three window controls everywhere — minimize, bigger/smaller, close (v2026-10-13) */
 (function(){
-  var p=document.getElementById('chatPanel'), b=document.getElementById('chatFullBtn'), c=document.getElementById('chatCloseBtn');
-  if(!p||!b) return;
-  function set(on){ p.classList.toggle('full',on); b.textContent=on?'🗗':'⛶'; b.title=on?'Exit full screen / فل اسکرین ختم':'Full screen / فل اسکرین'; b.setAttribute('aria-label',b.title); }
-  b.addEventListener('click',function(){ set(!p.classList.contains('full')); });
-  if(c) c.addEventListener('click',function(){ set(false); });
-  set(false);
+  var ICON={"min": "<svg viewBox=\"0 0 14 14\" aria-hidden=\"true\"><path d=\"M3 10h8\"/></svg>", "max": "<svg viewBox=\"0 0 14 14\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"8\" height=\"8\" rx=\"1\"/></svg>", "rest": "<svg viewBox=\"0 0 14 14\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 5V3h6v6H9\"/></svg>", "x": "<svg viewBox=\"0 0 14 14\" aria-hidden=\"true\"><path d=\"M3 3l8 8M11 3l-8 8\"/></svg>"}, p=document.getElementById('chatPanel'), mn=document.getElementById('chatPanelMinBtn'), sz=document.getElementById('chatFullBtn'), cl=document.getElementById('chatCloseBtn');
+  if(!p||!mn||!sz||!cl) return;
+  var st=document.createElement('style');
+  st.textContent='.chat-head .chat-head-btns{display:flex;gap:6px;align-items:flex-start}'
+   +'.chat-head .chat-head-btns button{width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center}'
+   +'.chat-head .chat-head-btns svg{pointer-events:none;width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
+   +'#chatPanel.full{width:100%}'
+   +'#chatPanel.pmin{top:auto;bottom:0;height:auto}'
+   +'#chatPanel.pmin>:not(.chat-head){display:none !important}'
+   +'@media(max-width:640px){#chatPanel.half{top:auto;bottom:0;height:55%;border-radius:14px 14px 0 0}}'
+   +'@media print{#chatPanel{display:none !important}}';
+  document.head.appendChild(st);
+  function mobile(){ return window.matchMedia('(max-width:640px)').matches; }
+  function big(){ return mobile() ? !p.classList.contains('half') : p.classList.contains('full'); }
+  function paint(){
+    var b=big(), t=b?"Smaller / چھوٹا سائز":"Bigger / بڑا کریں"; sz.innerHTML=b?ICON.rest:ICON.max; sz.title=t; sz.setAttribute('aria-label',t);
+    var m=p.classList.contains('pmin'), tm=m?"Restore / واپس کھولیں":"Minimize / چھوٹا کریں"; mn.title=tm; mn.setAttribute('aria-label',tm);
+  }
+  sz.addEventListener('click',function(){ p.classList.remove('pmin'); if(mobile()) p.classList.toggle('half'); else p.classList.toggle('full'); paint(); });
+  mn.addEventListener('click',function(){ p.classList.toggle('pmin'); paint(); });
+  cl.addEventListener('click',function(){ p.classList.remove('pmin','half','full'); paint(); });
+  new MutationObserver(function(){ if(!p.classList.contains('open') && (p.classList.contains('pmin')||p.classList.contains('half')||p.classList.contains('full'))){ p.classList.remove('pmin','half','full'); } paint(); }).observe(p,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',paint);
+  paint();
 })();
 </script>
 </body>
