@@ -76,7 +76,7 @@
       meta.push([l.replace(/\s*:\s*$/, ""), v]);
     });
     var extra = [];
-    Array.prototype.forEach.call(paper.querySelectorAll(".pb-print-extra-fields .hf-row"), function(r){ extra.push(txt(r).replace(/\s*\n\s*/g, "      ")); });
+    Array.prototype.forEach.call(paper.querySelectorAll(".pb-print-extra-fields .hf-row"), function(r){ extra.push(Array.prototype.map.call(r.children, function(sp){ return txt(sp); }).filter(Boolean).join("      |      ")); });
     return {
       rtl: rtl,
       title: txt(paper.querySelector(".notice-header h2")),
