@@ -58,7 +58,7 @@
   }
   function footerOf(D, rtl){
     return new D.Footer({ children: [new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [
-      new D.TextRun({ text: "Camp Office Prosecutor General Punjab  |  Supreme Court of Pakistan, Islamabad  |  Generated " + today() + "  |  Page ", font: FONT, size: 14, color: "666666" }),
+      new D.TextRun({ text: "Generated " + today() + "  |  Page ", font: FONT, size: 14, color: "666666" }),
       new D.TextRun({ children: [D.PageNumber.CURRENT], font: FONT, size: 14, bold: true, color: "1B3F63" }),
       new D.TextRun({ text: " of ", font: FONT, size: 14, color: "666666" }),
       new D.TextRun({ children: [D.PageNumber.TOTAL_PAGES], font: FONT, size: 14, bold: true, color: "1B3F63" })
@@ -123,7 +123,7 @@
       rows: [new D.TableRow({ cantSplit: true, children: [h.cell(senderKids, half), h.cell(stampKids, TOTAL_W - half, { valign: D.VerticalAlign.CENTER })] })]
     }));
     var doc = new D.Document({
-      creator: "Camp Office, Prosecutor General Punjab", title: N.title || "Notice",
+      creator: "", title: N.title || "Notice",
       sections: [{ properties: { page: { size: { width: pg.w, height: pg.h }, margin: { top: 1000, bottom: 1000, left: M, right: M, footer: 400 } } }, footers: { default: footerOf(D, rtl) }, children: kids }]
     });
     return await D.Packer.toBlob(doc);
@@ -161,8 +161,8 @@
     var landscape = L.cols.length > 5;
     var pw = landscape ? pg.h : pg.w, ph = landscape ? pg.w : pg.h, M = 567, TOTAL_W = pw - 2 * M;
     var ur = isUr(), kids = [];
-    kids.push(h.para([h.run("Camp Office Prosecutor General Punjab", { size: 28, bold: true, color: "1B3F63" })], { align: AL.CENTER, after: 20 }));
-    kids.push(h.para([h.run("Supreme Court of Pakistan, Islamabad", { size: 19, color: "555555" })], { align: AL.CENTER }));
+    kids.push(h.para([h.run("", { size: 28, bold: true, color: "1B3F63" })], { align: AL.CENTER, after: 20 }));
+    kids.push(h.para([h.run("", { size: 19, color: "555555" })], { align: AL.CENTER }));
     kids = kids.concat(ruleParas(D));
     kids.push(h.para([h.run(ur ? "کیس فہرست / کاز لسٹ اور خلاصہ" : "CASE LIST / CAUSE LIST & SUMMARY", { size: 26, bold: true, color: "1B3F63", rtl: ur })], { align: AL.CENTER, before: 40, after: 40, rtl: ur }));
     var sub = "Fixed date: " + (L.from || "All-time") + " to " + (L.to || "today") + "   |   Cases: " + L.total + "   |   Date: " + today();
@@ -192,7 +192,7 @@
         borders: { top: bd, bottom: bd, left: bd, right: bd, insideHorizontal: bd, insideVertical: bd } }));
     }
     var doc = new D.Document({
-      creator: "Camp Office, Prosecutor General Punjab", title: "Case List / Cause List",
+      creator: "", title: "Case List / Cause List",
       sections: [{ properties: { page: { size: { width: pg.w, height: pg.h, orientation: landscape ? D.PageOrientation.LANDSCAPE : D.PageOrientation.PORTRAIT }, margin: { top: 700, bottom: 760, left: M, right: M, footer: 300 } } }, footers: { default: footerOf(D, false) }, children: kids }]
     });
     return await D.Packer.toBlob(doc);
