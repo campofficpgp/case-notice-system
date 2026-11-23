@@ -58,7 +58,7 @@
   }
   function footerOf(D, rtl){
     return new D.Footer({ children: [new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [
-      new D.TextRun({ text: "Generated " + today() + "  |  Page ", font: FONT, size: 14, color: "666666" }),
+      new D.TextRun({ text: "Page ", font: FONT, size: 14, color: "666666" }),
       new D.TextRun({ children: [D.PageNumber.CURRENT], font: FONT, size: 14, bold: true, color: "1B3F63" }),
       new D.TextRun({ text: " of ", font: FONT, size: 14, color: "666666" }),
       new D.TextRun({ children: [D.PageNumber.TOTAL_PAGES], font: FONT, size: 14, bold: true, color: "1B3F63" })
